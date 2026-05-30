@@ -25,7 +25,7 @@
         .success-text { color: #059669; }
 
         .explanation-list { margin: 0; padding: 0; list-style: none; }
-        .explanation-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 6px; border-left: 3px solid #6366f1; }
+        .explanation-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 6px; border-left: 3px solid #0d9488; }
         .explanation-item span { color: var(--text-primary); font-size: 0.95rem; }
         
         /* SHAP Chart */
@@ -37,7 +37,7 @@
         .shap-risk { background: #dc2626; } /* Red -> increases risk */
         .shap-value { width: 40px; font-size: 0.8rem; color: var(--text-muted); font-family: monospace; }
 
-        .ml-badge { background: #e0e7ff; color: #4f46e5; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; border: 1px solid #c7d2fe; }
+        .ml-badge { background: rgba(13, 148, 136, 0.1); color: #0d9488; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(13, 148, 136, 0.2); }
     </style>
 </head>
 <body>
@@ -99,7 +99,7 @@
         <ul class="explanation-list">
             {% for reason in risk.reasons %}
             <li class="explanation-item">
-                <span style="color: #6366f1; font-weight: 800; font-family: monospace;">→</span>
+                <span style="color: #0d9488; font-weight: 800; font-family: monospace;">→</span>
                 <span>{{ reason }}</span>
             </li>
             {% endfor %}
@@ -244,16 +244,16 @@
     <!-- ═══════════════════════════════════════════════════════════ -->
     <!-- SECTION 6: LIVE ML WHAT-IF SIMULATOR                      -->
     <!-- ═══════════════════════════════════════════════════════════ -->
-    <div class="panel" style="margin-bottom: 60px; border: 2px solid #6366f1; position: relative; overflow: hidden;">
+    <div class="panel" style="margin-bottom: 60px; border: 2px solid #0d9488; position: relative; overflow: hidden;">
         <!-- Animated corner glow -->
-        <div style="position: absolute; top: -2px; left: -2px; right: -2px; height: 3px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa, #6366f1); background-size: 200% 100%; animation: shimmer 2s linear infinite;"></div>
+        <div style="position: absolute; top: -2px; left: -2px; right: -2px; height: 3px; background: linear-gradient(90deg, #0d9488, #0f766e, #14b8a6, #0d9488); background-size: 200% 100%; animation: shimmer 2s linear infinite;"></div>
         
-        <div class="panel-header" style="border-bottom-color: #e0e7ff;">
+        <div class="panel-header" style="border-bottom-color: #ccfbf1;">
             <span>6. Live ML What-If Simulator</span>
             <span class="ml-badge" style="background: #f0fdf4; color: #059669; border-color: #bbf7d0;">INTERACTIVE</span>
         </div>
 
-        <div style="margin-bottom: 24px; font-size: 0.9rem; color: var(--text-secondary); background: linear-gradient(135deg, #eef2ff, #f0f9ff); padding: 16px; border-radius: 8px; border: 1px solid #e0e7ff;">
+        <div style="margin-bottom: 24px; font-size: 0.9rem; color: var(--text-secondary); background: linear-gradient(135deg, #f0fdfa, #f0fdf9); padding: 16px; border-radius: 8px; border: 1px solid #ccfbf1;">
             <strong>What is this?</strong> Adjust the student's feature values using the sliders below. The trained Random Forest model will re-run <strong>live inference</strong> and show you exactly how the prediction changes. Each of the <strong>100 decision trees</strong> votes independently — watch them respond in real-time.
         </div>
 
@@ -261,15 +261,15 @@
         <div id="pipelineViz" style="display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 32px; padding: 20px 0; position: relative;">
             <!-- Stage 1: Input Features -->
             <div class="pipeline-stage" style="text-align: center; flex-shrink: 0;">
-                <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #eef2ff, #e0e7ff); border: 2px solid #6366f1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin: 0 auto 8px;">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f0fdfa, #ccfbf1); border: 2px solid #0d9488; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin: 0 auto 8px;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
                 </div>
-                <div style="font-size: 0.7rem; font-weight: 600; color: #6366f1; text-transform: uppercase; letter-spacing: 0.5px;">7 Features</div>
+                <div style="font-size: 0.7rem; font-weight: 600; color: #0d9488; text-transform: uppercase; letter-spacing: 0.5px;">7 Features</div>
             </div>
 
             <!-- Arrow 1 -->
-            <div class="pipeline-arrow" style="width: 60px; height: 2px; background: #c7d2fe; position: relative; margin: 0 4px;">
-                <div id="dataParticle1" style="position: absolute; top: -3px; left: 0; width: 8px; height: 8px; background: #6366f1; border-radius: 50%; animation: particleFlow 1.5s ease-in-out infinite;"></div>
+            <div class="pipeline-arrow" style="width: 60px; height: 2px; background: #ccfbf1; position: relative; margin: 0 4px;">
+                <div id="dataParticle1" style="position: absolute; top: -3px; left: 0; width: 8px; height: 8px; background: #0d9488; border-radius: 50%; animation: particleFlow 1.5s ease-in-out infinite;"></div>
             </div>
 
             <!-- Stage 2: Feature Scaling -->
@@ -316,10 +316,10 @@
             <div class="slider-group">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
                     <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Attendance (%)</label>
-                    <span id="val_attendance" style="font-family: monospace; font-weight: 700; color: #6366f1; font-size: 0.9rem;">{{ student.attendance|default(85) }}</span>
+                    <span id="val_attendance" style="font-family: monospace; font-weight: 700; color: #0d9488; font-size: 0.9rem;">{{ student.attendance|default(85) }}</span>
                 </div>
                 <input type="range" id="sl_attendance" min="0" max="100" step="1" value="{{ student.attendance|default(85) }}" 
-                    style="width: 100%; accent-color: #6366f1; height: 6px;" oninput="updateSlider(this)">
+                    style="width: 100%; accent-color: #0d9488; height: 6px;" oninput="updateSlider(this)">
                 <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted);"><span>0%</span><span>100%</span></div>
             </div>
             
@@ -327,10 +327,10 @@
             <div class="slider-group">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
                     <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">SGPA</label>
-                    <span id="val_sgpa" style="font-family: monospace; font-weight: 700; color: #6366f1; font-size: 0.9rem;">{{ student.sgpa|default(7.0) }}</span>
+                    <span id="val_sgpa" style="font-family: monospace; font-weight: 700; color: #0d9488; font-size: 0.9rem;">{{ student.sgpa|default(7.0) }}</span>
                 </div>
                 <input type="range" id="sl_sgpa" min="0" max="10" step="0.1" value="{{ student.sgpa|default(7.0) }}" 
-                    style="width: 100%; accent-color: #6366f1; height: 6px;" oninput="updateSlider(this)">
+                    style="width: 100%; accent-color: #0d9488; height: 6px;" oninput="updateSlider(this)">
                 <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted);"><span>0</span><span>10</span></div>
             </div>
 
@@ -338,10 +338,10 @@
             <div class="slider-group">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
                     <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Average Stress Level</label>
-                    <span id="val_avg_stress" style="font-family: monospace; font-weight: 700; color: #6366f1; font-size: 0.9rem;">3.0</span>
+                    <span id="val_avg_stress" style="font-family: monospace; font-weight: 700; color: #0d9488; font-size: 0.9rem;">3.0</span>
                 </div>
                 <input type="range" id="sl_avg_stress" min="1" max="5" step="0.1" value="3.0" 
-                    style="width: 100%; accent-color: #6366f1; height: 6px;" oninput="updateSlider(this)">
+                    style="width: 100%; accent-color: #0d9488; height: 6px;" oninput="updateSlider(this)">
                 <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted);"><span>Low (1)</span><span>High (5)</span></div>
             </div>
 
@@ -349,10 +349,10 @@
             <div class="slider-group">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
                     <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Missed Days (Week)</label>
-                    <span id="val_missed_days" style="font-family: monospace; font-weight: 700; color: #6366f1; font-size: 0.9rem;">0</span>
+                    <span id="val_missed_days" style="font-family: monospace; font-weight: 700; color: #0d9488; font-size: 0.9rem;">0</span>
                 </div>
                 <input type="range" id="sl_missed_days" min="0" max="7" step="1" value="0" 
-                    style="width: 100%; accent-color: #6366f1; height: 6px;" oninput="updateSlider(this)">
+                    style="width: 100%; accent-color: #0d9488; height: 6px;" oninput="updateSlider(this)">
                 <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted);"><span>0</span><span>7</span></div>
             </div>
 
@@ -360,10 +360,10 @@
             <div class="slider-group">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
                     <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Average Mood</label>
-                    <span id="val_avg_mood" style="font-family: monospace; font-weight: 700; color: #6366f1; font-size: 0.9rem;">2.5</span>
+                    <span id="val_avg_mood" style="font-family: monospace; font-weight: 700; color: #0d9488; font-size: 0.9rem;">2.5</span>
                 </div>
                 <input type="range" id="sl_avg_mood" min="1" max="3" step="0.1" value="2.5" 
-                    style="width: 100%; accent-color: #6366f1; height: 6px;" oninput="updateSlider(this)">
+                    style="width: 100%; accent-color: #0d9488; height: 6px;" oninput="updateSlider(this)">
                 <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted);"><span>Low (1)</span><span>High (3)</span></div>
             </div>
 
@@ -371,10 +371,10 @@
             <div class="slider-group">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
                     <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Average Energy</label>
-                    <span id="val_avg_energy" style="font-family: monospace; font-weight: 700; color: #6366f1; font-size: 0.9rem;">3.0</span>
+                    <span id="val_avg_energy" style="font-family: monospace; font-weight: 700; color: #0d9488; font-size: 0.9rem;">3.0</span>
                 </div>
                 <input type="range" id="sl_avg_energy" min="1" max="5" step="0.1" value="3.0" 
-                    style="width: 100%; accent-color: #6366f1; height: 6px;" oninput="updateSlider(this)">
+                    style="width: 100%; accent-color: #0d9488; height: 6px;" oninput="updateSlider(this)">
                 <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted);"><span>Low (1)</span><span>High (5)</span></div>
             </div>
 
@@ -382,10 +382,10 @@
             <div class="slider-group" style="grid-column: 1 / -1;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
                     <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Check-in Streak (Days)</label>
-                    <span id="val_streak" style="font-family: monospace; font-weight: 700; color: #6366f1; font-size: 0.9rem;">3</span>
+                    <span id="val_streak" style="font-family: monospace; font-weight: 700; color: #0d9488; font-size: 0.9rem;">3</span>
                 </div>
                 <input type="range" id="sl_streak" min="0" max="30" step="1" value="3" 
-                    style="width: 100%; accent-color: #6366f1; height: 6px;" oninput="updateSlider(this)">
+                    style="width: 100%; accent-color: #0d9488; height: 6px;" oninput="updateSlider(this)">
                 <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted);"><span>0</span><span>30</span></div>
             </div>
         </div>
@@ -398,7 +398,7 @@
                 <div style="position: relative; width: 160px; height: 160px; margin: 0 auto;">
                     <svg viewBox="0 0 120 120" style="width: 160px; height: 160px; transform: rotate(-90deg);">
                         <circle cx="60" cy="60" r="52" fill="none" stroke="#e2e8f0" stroke-width="8"/>
-                        <circle id="probRing" cx="60" cy="60" r="52" fill="none" stroke="#6366f1" stroke-width="8" 
+                        <circle id="probRing" cx="60" cy="60" r="52" fill="none" stroke="#0d9488" stroke-width="8" 
                             stroke-dasharray="326.73" stroke-dashoffset="326.73" 
                             stroke-linecap="round" style="transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease;"/>
                     </svg>
@@ -437,7 +437,7 @@
 
         <!-- Inference Log -->
         <div style="margin-top: 24px; background: #0f172a; border-radius: 8px; padding: 16px; font-family: 'Courier New', monospace; font-size: 0.75rem; color: #94a3b8; max-height: 150px; overflow-y: auto;" id="inferenceLog">
-            <div style="color: #6366f1;">$ model.predict() — Awaiting input...</div>
+            <div style="color: #0d9488;">$ model.predict() — Awaiting input...</div>
         </div>
     </div>
 
@@ -471,7 +471,7 @@
         transition: border-color 0.2s;
     }
     .slider-group:hover {
-        border-color: #6366f1;
+        border-color: #0d9488;
     }
     input[type="range"] {
         -webkit-appearance: none;
@@ -488,9 +488,9 @@
         width: 18px;
         height: 18px;
         border-radius: 50%;
-        background: #6366f1;
+        background: #0d9488;
         border: 3px solid #ffffff;
-        box-shadow: 0 2px 6px rgba(99,102,241,0.4);
+        box-shadow: 0 2px 6px rgba(13,148,136,0.3);
         cursor: pointer;
         transition: transform 0.15s;
     }
@@ -655,7 +655,7 @@
 
             const rawProb = data.raw_ml_probability || prob;
             if (rawProb !== prob) {
-                addLog(`[Run #${runId}] Raw ML output: P(dropout) = ${rawProb}% → Calibrated: ${prob}% (academic safety-net applied)`, '#6366f1');
+                addLog(`[Run #${runId}] Raw ML output: P(dropout) = ${rawProb}% → Calibrated: ${prob}% (academic safety-net applied)`, '#0d9488');
             }
             addLog(`[Run #${runId}] Inference complete → P(dropout) = ${prob}% [${data.risk_level}] | ${safeCount}/${totalTrees} trees voted SAFE`, '#059669');
 
@@ -742,8 +742,8 @@
             const ctxTrend = document.getElementById('trendChart').getContext('2d');
             
             const gradient = ctxTrend.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)');
-            gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+            gradient.addColorStop(0, 'rgba(13, 148, 136, 0.5)');
+            gradient.addColorStop(1, 'rgba(13, 148, 136, 0.0)');
 
             new Chart(ctxTrend, {
                 type: 'line',
@@ -752,11 +752,11 @@
                     datasets: [{
                         label: 'Dropout Probability (%)',
                         data: trendData,
-                        borderColor: '#6366f1',
+                        borderColor: '#0d9488',
                         backgroundColor: gradient,
                         borderWidth: 3,
                         pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#6366f1',
+                        pointBorderColor: '#0d9488',
                         pointBorderWidth: 2,
                         pointRadius: 5,
                         pointHoverRadius: 7,

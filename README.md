@@ -1,8 +1,8 @@
-# Project V — Intelligent Student Monitoring & Support System
+# ScholarPulse — Intelligent Student Monitoring & Support System
 
-![Project V](https://img.shields.io/badge/Status-Active-success.svg) ![Python](https://img.shields.io/badge/Python-3.x-blue.svg) ![Flask](https://img.shields.io/badge/Flask-Backend-black.svg) ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Machine%20Learning-orange.svg)
+![ScholarPulse](https://img.shields.io/badge/Status-Active-success.svg) ![Python](https://img.shields.io/badge/Python-3.x-blue.svg) ![Flask](https://img.shields.io/badge/Flask-Backend-black.svg) ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Machine%20Learning-orange.svg)
 
-**Project V** is an advanced, AI-driven web application designed to monitor student academic performance and behavioral well-being. Built with Python, Flask, and Scikit-Learn, it leverages a **Random Forest Classifier** to predict student dropout probabilities and subject-level pass rates. The system emphasizes **Explainable AI (XAI)**, providing educators with a transparent, interactive "What-If" simulator to understand exactly how different factors contribute to a student's risk profile.
+**ScholarPulse** is an advanced, AI-driven web application designed to monitor student academic performance and behavioral well-being. Built with Python, Flask, and Scikit-Learn, it leverages a **Random Forest Classifier** to predict student dropout probabilities and subject-level pass rates. The system emphasizes **Explainable AI (XAI)**, providing educators with a transparent, interactive "What-If" simulator to understand exactly how different factors contribute to a student's risk profile.
 
 ## 🌟 Key Features
 

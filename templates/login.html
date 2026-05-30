@@ -3,80 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project V — Log In</title>
+    <title>ScholarPulse — Log In</title>
     <link rel="stylesheet" href="/static/style.css">
-    <style>
-        .login-wrapper {
-            max-width: 420px;
-            margin: 100px auto;
-            text-align: center;
-        }
-        .hero-title {
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-        .hero-subtitle {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            margin-bottom: 32px;
-        }
-        .role-tabs input { display: none; }
-        .divider { display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 0.85rem; margin: 24px 0; }
-        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-light); }
-        .divider:not(:empty)::before { margin-right: .25em; }
-        .divider:not(:empty)::after { margin-left: .25em; }
-    </style>
 </head>
-<body>
+<body style="margin:0; padding:0; background:#fafaf9; min-height:100vh; display:block;">
 
-<div class="glass-container login-wrapper">
-    <h1 class="hero-title">Project V</h1>
-    <p class="hero-subtitle">Intelligent Student Support System</p>
-
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="flash error">{{ messages[0] }}</div>
-      {% endif %}
-    {% endwith %}
-
-    <form method="POST" action="/login">
+<div class="login-center-page">
+    <div class="login-center-card">
         
-        <div class="role-tabs">
-            <input type="radio" name="role" id="r_student" value="student" {% if not preselect_admin %}checked{% endif %}>
-            <label for="r_student">Student</label>
-
-            <input type="radio" name="role" id="r_teacher" value="teacher">
-            <label for="r_teacher">Mentor</label>
-
-            <input type="radio" name="role" id="r_parent" value="parent">
-            <label for="r_parent">Parent</label>
+        <!-- Header / Branding -->
+        <div class="login-center-brand">
+            <div class="login-center-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+            </div>
+            <span class="login-center-brand-name">ScholarPulse</span>
+        </div>
+        
+        <div class="login-center-header">
+            <h2>Welcome Back</h2>
+            <p>Sign in to access your mentor, parent, or student portal.</p>
+        </div>
+        
+        <!-- Flash Alert Messages -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-human">{{ messages[0] }}</div>
+          {% endif %}
+        {% endwith %}
+        
+        <!-- Form -->
+        <form method="POST" action="/login">
             
-            <input type="radio" name="role" id="r_admin" value="admin" {% if preselect_admin %}checked{% endif %}>
-            <label for="r_admin">Admin</label>
+            <!-- Professional Segmented Role Selector -->
+            <div class="human-tabs">
+                <input type="radio" name="role" id="r_student" value="student" {% if not preselect_admin %}checked{% endif %}>
+                <label for="r_student">Student</label>
+    
+                <input type="radio" name="role" id="r_teacher" value="teacher">
+                <label for="r_teacher">Mentor</label>
+    
+                <input type="radio" name="role" id="r_parent" value="parent">
+                <label for="r_parent">Parent</label>
+                
+                {% if preselect_admin %}
+                <input type="radio" name="role" id="r_admin" value="admin" checked>
+                <label for="r_admin">Admin</label>
+                {% endif %}
+            </div>
+    
+            <!-- Form Inputs -->
+            <div class="human-group">
+                <label id="usn-label">ID Number</label>
+                <div class="human-input-wrapper">
+                    <input type="text" name="username" id="username-input" class="human-input" placeholder="Enter your ID" required autocomplete="username">
+                </div>
+            </div>
+    
+            <div class="human-group" style="margin-bottom: 24px;">
+                <label>Password</label>
+                <div class="human-input-wrapper">
+                    <input type="password" name="password" class="human-input" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+            </div>
+    
+            <button type="submit" class="btn-human">Sign In</button>
+        </form>
+        
+        <!-- Footer Actions -->
+        <div class="human-footer">
+            <a href="/register" class="human-link">Student Onboarding</a>
+            <a href="/forgot_password" class="human-link">Reset Password</a>
         </div>
-
-        <div class="form-group">
-            <label id="usn-label">ID Number</label>
-            <input type="text" name="username" id="username-input" placeholder="Enter your ID" required>
-        </div>
-
-        <div class="form-group">
-            <label>Password</label>
-            <input type="password" name="password" placeholder="Enter your password" required>
-        </div>
-
-        <button type="submit" class="btn" style="width: 100%; margin-top: 8px;">Sign In</button>
-    </form>
-
-    <div class="divider">or</div>
-
-    <div style="display: flex; gap: 12px;">
-        <a href="/register" class="btn secondary" style="flex: 1; padding: 12px; font-size: 0.9rem;">Register</a>
-        <a href="/forgot_password" class="btn secondary" style="flex: 1; padding: 12px; font-size: 0.9rem;">Forgot Password</a>
+        
     </div>
-
 </div>
 
 <script>
@@ -86,13 +87,27 @@
         r_parent: 'Parent ID',
         r_admin: 'Admin ID'
     };
-    document.querySelectorAll('.role-tabs input').forEach(radio => {
+    
+    const placeholders = {
+        r_student: 'e.g. NNM23RI031',
+        r_teacher: 'e.g. T-102',
+        r_parent: 'e.g. P-NNM23RI031',
+        r_admin: 'Enter Admin ID'
+    };
+
+    document.querySelectorAll('.human-tabs input').forEach(radio => {
         radio.addEventListener('change', () => {
             document.getElementById('usn-label').textContent = labels[radio.id] || 'ID Number';
+            document.getElementById('username-input').placeholder = placeholders[radio.id] || 'Enter your ID';
         });
     });
-    const checked = document.querySelector('.role-tabs input:checked');
-    if (checked) document.getElementById('usn-label').textContent = labels[checked.id] || 'ID Number';
+    
+    // Set initial values
+    const checked = document.querySelector('.human-tabs input:checked');
+    if (checked) {
+        document.getElementById('usn-label').textContent = labels[checked.id] || 'ID Number';
+        document.getElementById('username-input').placeholder = placeholders[checked.id] || 'Enter your ID';
+    }
 </script>
 
 </body>

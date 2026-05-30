@@ -40,6 +40,37 @@ except FileNotFoundError:
 app = Flask(__name__)
 app.secret_key = "super_secret_nmam_key"
 
+ACTIVE_SESSIONS = {}
+
+@app.before_request
+def track_user_activity():
+    if request.path.startswith("/static/"):
+        return
+    if "user_id" in session:
+        user_id = session["user_id"]
+        role = session.get("role", "unknown")
+        name = session.get("name")
+        if not name or str(name).strip() == "":
+            name = str(user_id)
+            
+        now = datetime.now()
+        
+        if user_id in ACTIVE_SESSIONS:
+            if (now - ACTIVE_SESSIONS[user_id]["last_active"]).total_seconds() > 1800:
+                ACTIVE_SESSIONS[user_id]["session_start"] = now
+            ACTIVE_SESSIONS[user_id]["last_active"] = now
+            ACTIVE_SESSIONS[user_id]["name"] = name
+            ACTIVE_SESSIONS[user_id]["role"] = role
+        else:
+            ACTIVE_SESSIONS[user_id] = {
+                "name": name,
+                "role": role,
+                "session_start": now,
+                "last_active": now
+            }
+
+
+
 @app.context_processor
 def inject_ml_status():
     return dict(ml_status={
@@ -55,8 +86,16 @@ def inject_ml_status():
 # ═══════════════════════════════════════════════════════════════
 def get_df(filepath):
     if not os.path.exists(filepath): return pd.DataFrame()
-    try: return pd.read_csv(filepath)
-    except pd.errors.EmptyDataError: return pd.DataFrame()
+    try:
+        string_cols = ['usn', 'teacher_id', 'mentor_id', 'parent_id', 'parent_phone']
+        header = pd.read_csv(filepath, nrows=0)
+        dtype_dict = {col: str for col in string_cols if col in header.columns}
+        return pd.read_csv(filepath, dtype=dtype_dict)
+    except pd.errors.EmptyDataError:
+        return pd.DataFrame()
+    except Exception:
+        try: return pd.read_csv(filepath)
+        except Exception: return pd.DataFrame()
 
 def save_df(df, filepath):
     try:
@@ -965,6 +1004,8 @@ def teacher_academic_entry(usn):
         if new_marks:
             marks_df = pd.concat([marks_df, pd.DataFrame(new_marks)], ignore_index=True)
         save_df(marks_df, "data/academic_marks.csv")
+        run_retrain_global_automatic()
+        run_retrain_subject_automatic()
         flash(f"Academic marks updated for {profile.get('name', usn)}.")
         return redirect(url_for("teacher_student_view", usn=usn))
 
@@ -1067,6 +1108,7 @@ def student_daily_checkin():
         }
         df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
         save_df(df, "data/daily_checkins.csv")
+        run_retrain_global_automatic()
         flash("Check-in complete! Keep your streak going! ")
         return redirect(url_for("student"))
 
@@ -1503,6 +1545,158 @@ def admin_retrain_global_model():
     return redirect(url_for("admin_dashboard"))
 
 
+def get_system_settings():
+    """Loads system settings, defaulting to manual retraining if file doesn't exist."""
+    import json
+    os.makedirs("data", exist_ok=True)
+    target = "data/system_settings.json"
+    if not os.path.exists(target):
+        default_settings = {
+            "retrain_mode": "manual",  # can be 'manual' or 'automatic'
+            "last_global_train_time": None,
+            "last_subject_train_time": None
+        }
+        try:
+            with open(target, "w") as f:
+                json.dump(default_settings, f, indent=4)
+        except Exception:
+            pass
+        return default_settings
+    try:
+        with open(target, "r") as f:
+            return json.load(f)
+    except Exception:
+        return {"retrain_mode": "manual"}
+
+
+def save_system_settings(settings):
+    """Saves system settings to disk."""
+    import json
+    os.makedirs("data", exist_ok=True)
+    target = "data/system_settings.json"
+    try:
+        with open(target, "w") as f:
+            json.dump(settings, f, indent=4)
+    except Exception as e:
+        print(f"Error saving system settings: {e}")
+
+
+def run_retrain_global_automatic():
+    """Performs global model training in the background if automatic mode is active."""
+    settings = get_system_settings()
+    if settings.get("retrain_mode") != "automatic":
+        return
+    
+    import threading
+    def retrain_worker():
+        try:
+            print("AUTOMATIC RETRAINING: Retraining Global Risk Model...")
+            df = generate_global_model_data()
+            if len(df) < 2:
+                print("AUTOMATIC RETRAINING SKIP: Not enough records (min 2)")
+                return
+            
+            from sklearn.ensemble import RandomForestClassifier
+            import pickle, os
+            
+            X = df[['attendance', 'sgpa', 'avg_stress', 'missed_days', 'avg_mood', 'avg_energy', 'streak']]
+            y = df['target']
+            
+            clf = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
+            clf.fit(X, y)
+            
+            os.makedirs('models', exist_ok=True)
+            feature_names = ['attendance', 'sgpa', 'avg_stress', 'missed_days', 'avg_mood', 'avg_energy', 'streak']
+            model_data = {
+                'model': clf,
+                'feature_names': feature_names,
+                'n_estimators': 100,
+                'max_depth': 8,
+                'training_samples': len(df)
+            }
+            with open('models/risk_model.pkl', 'wb') as f:
+                pickle.dump(model_data, f)
+                
+            global _ML_MODEL, _ML_FEATURE_NAMES
+            _ML_MODEL = clf
+            _ML_FEATURE_NAMES = feature_names
+            
+            # Update last train time in settings
+            s = get_system_settings()
+            s["last_global_train_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            save_system_settings(s)
+            print("AUTOMATIC RETRAINING SUCCESS: Global Risk Model retrained successfully.")
+        except Exception as e:
+            print(f"AUTOMATIC RETRAINING ERROR (Global): {e}")
+            
+    threading.Thread(target=retrain_worker, daemon=True).start()
+
+
+def run_retrain_subject_automatic():
+    """Performs subject pass probability model training in the background if automatic mode is active."""
+    settings = get_system_settings()
+    if settings.get("retrain_mode") != "automatic":
+        return
+        
+    import threading
+    def retrain_worker():
+        try:
+            print("AUTOMATIC RETRAINING: Retraining Subject Pass Model...")
+            target_path = "data/academic_marks.csv"
+            df = get_df(target_path)
+            if df.empty:
+                print("AUTOMATIC RETRAINING SKIP: No academic marks data")
+                return
+                
+            from sklearn.ensemble import RandomForestClassifier
+            import pickle, os
+            
+            train_data = df.dropna(subset=['cie', 'see']).copy()
+            if len(train_data) < 10:
+                print("AUTOMATIC RETRAINING SKIP: Not enough marks records (min 10)")
+                return
+                
+            train_data['cie'] = pd.to_numeric(train_data['cie'], errors='coerce')
+            train_data['see'] = pd.to_numeric(train_data['see'], errors='coerce')
+            train_data = train_data.dropna(subset=['cie', 'see'])
+            
+            total = train_data['cie'] + train_data['see']
+            target = ((total >= 40) & (train_data['see'] >= 35)).astype(int)
+            
+            clf = RandomForestClassifier(n_estimators=50, max_depth=5, random_state=42)
+            X = train_data[['cie']]
+            clf.fit(X, target)
+            
+            os.makedirs('models', exist_ok=True)
+            model_data = {'model': clf, 'features': ['cie']}
+            with open('models/subject_model.pkl', 'wb') as f:
+                pickle.dump(model_data, f)
+                
+            global _SUBJECT_MODEL
+            _SUBJECT_MODEL = clf
+            
+            # Update last train time in settings
+            s = get_system_settings()
+            s["last_subject_train_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            save_system_settings(s)
+            print("AUTOMATIC RETRAINING SUCCESS: Subject Pass Model retrained successfully.")
+        except Exception as e:
+            print(f"AUTOMATIC RETRAINING ERROR (Subject): {e}")
+            
+    threading.Thread(target=retrain_worker, daemon=True).start()
+
+
+@app.route("/admin/save_retrain_settings", methods=["POST"])
+def admin_save_retrain_settings():
+    if not admin_required(): return redirect(url_for("login"))
+    mode = request.form.get("retrain_mode", "manual")
+    settings = get_system_settings()
+    settings["retrain_mode"] = mode
+    save_system_settings(settings)
+    flash(f"Retraining strategy updated to {mode.upper()} successfully.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+
 def admin_required():
     return session.get("role") == "admin"
 
@@ -1516,9 +1710,40 @@ def admin_dashboard():
         s["risk_level"] = risk_data["level"]
         s["dropout_prob"] = risk_data["dropout_prob"]
     parents = get_df("data/parents.csv").to_dict(orient="records")
+    
+    # Calculate live active sessions
+    now = datetime.now()
+    live_users = []
+    for uid, data in ACTIVE_SESSIONS.items():
+        is_live = (now - data["last_active"]).total_seconds() < 300
+        duration_seconds = (data["last_active"] - data["session_start"]).total_seconds()
+        if duration_seconds < 10:
+            duration_seconds = 10
+            
+        if duration_seconds < 60:
+            duration_str = f"{int(duration_seconds)}s"
+        else:
+            duration_str = f"{int(duration_seconds // 60)}m {int(duration_seconds % 60)}s"
+            
+        session_start_str = data["session_start"].strftime("%I:%M %p")
+        last_seen_str = data["last_active"].strftime("%I:%M %p")
+        
+        live_users.append({
+            "user_id": uid,
+            "name": data["name"],
+            "role": data["role"].title(),
+            "session_start": session_start_str,
+            "time_spent": duration_str,
+            "last_seen": last_seen_str,
+            "status": "Online" if is_live else "Away"
+        })
+    live_users.sort(key=lambda x: (x["status"] == "Online", x["last_seen"]), reverse=True)
+    
     return render_template("admin_dashboard.html",
         admin_name=session.get("name", "Admin"),
-        teachers=teachers, students=students, parents=parents)
+        teachers=teachers, students=students, parents=parents,
+        live_users=live_users,
+        retrain_settings=get_system_settings())
 
 # ── Teachers ─────────────────────────────────────────────────
 @app.route("/admin/teachers/add", methods=["POST"])

@@ -4,97 +4,163 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Report — {{ student.name }}</title>
-    <link href="https://fonts.googleapis.com/css2family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
     <style>
+        .profile-section {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-soft);
+            text-align: left;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            margin-top: 12px;
+        }
+        .data-table th {
+            background: #fafaf9;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            padding: 12px;
+            font-weight: 600;
+            text-align: left;
+        }
+        .data-table td {
+            border-bottom: 1px solid #f4f4f5;
+            padding: 12px;
+            color: var(--text-primary);
+        }
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge.danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .badge.warning { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+        .badge.success { background: #d1fae5; color: #059669; border: 1px solid #6ee7b7; }
+
         @media print {
-            body { background: white !important; color: #1e293b !important; }
-            .glass-container { box-shadow: none; border: 1px solid #e2e8f0; }
-            .no-print { display: none; }
+            body { background: white !important; color: #0f172a !important; }
+            .glass-container { box-shadow: none !important; border: 1px solid #cbd5e1 !important; margin: 0 auto !important; padding: 24px !important; }
+            .no-print { display: none !important; }
+            .profile-section { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
         }
     </style>
 </head>
-<body>
-<div class="glass-container large" style="max-width: 860px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:18px; border-bottom:1px solid var(--border-subtle);">
+<body style="display: block; min-height: 100vh; background: #fafaf9; margin: 0; padding: 0;">
+
+<div class="glass-container large" style="max-width: 860px; padding: 40px; margin-top: 40px; margin-bottom: 60px;">
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:18px; border-bottom:1px solid var(--border-light); text-align: left;">
         <div>
-            <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Formal Student Dossier</div>
-            <h2 style="margin:4px 0 0; font-size:1.6rem;">{{ student.name }}</h2>
-            <div style="color:var(--text-secondary); font-family:monospace;">{{ student.usn }} · {{ student.branch }}</div>
+            <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight: 600;">Formal Student Dossier</div>
+            <h2 style="margin:4px 0 0; font-size:1.8rem; font-family: 'Outfit', sans-serif;">{{ student.name }}</h2>
+            <div style="color:var(--text-secondary); font-family:monospace; font-size: 0.95rem;">{{ student.usn }} · {{ student.branch }}</div>
         </div>
         <div class="no-print" style="display:flex; gap:10px;">
-            <button onclick="window.print()" class="btn secondary" style="margin:0; padding:8px 16px; font-size:0.9rem;"> Print</button>
-            <a href="javascript:history.back()" class="btn secondary" style="margin:0; padding:8px 16px; font-size:0.9rem; text-decoration:none;">← Back</a>
+            <button onclick="window.print()" class="btn secondary" style="margin:0; padding:8px 16px; font-size:0.85rem; border: 1px solid #cbd5e1; display: flex; align-items: center; gap: 6px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Print
+            </button>
+            <a href="javascript:history.back()" class="btn secondary" style="margin:0; padding:8px 16px; font-size:0.85rem; text-decoration:none; border: 1px solid #cbd5e1;">← Back</a>
         </div>
     </div>
 
     <!-- Risk Summary -->
-    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px;">
-        <div class="stat-card">
-            <div class="stat-value {% if risk.dropout_prob > 60 %}text-danger{% elif risk.dropout_prob > 35 %}text-warning{% else %}text-success{% endif %}">{{ risk.dropout_prob }}%</div>
-            <div class="stat-label">Support Need %</div>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+        <div class="profile-section" style="margin-bottom:0; padding: 20px; text-align: center;">
+            <div style="font-family:'Outfit'; font-size:2.2rem; font-weight:800; line-height:1.2; margin-bottom:6px; color: {% if risk.dropout_prob > 60 %}#dc2626{% elif risk.dropout_prob > 35 %}#d97706{% else %}#0d9488{% endif %};">{{ risk.dropout_prob }}%</div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Support Need %</div>
         </div>
-        <div class="stat-card">
-            <div style="font-family:'Outfit'; font-size:1.4rem; font-weight:800; margin-bottom:6px;">
+        <div class="profile-section" style="margin-bottom:0; padding: 20px; text-align: center;">
+            <div style="margin-bottom:6px; min-height: 40px; display: flex; align-items: center; justify-content: center;">
                 <span class="badge {% if risk.academic_risk=='High'%}danger{% elif risk.academic_risk=='Medium'%}warning{% else %}success{% endif %}">{{ risk.academic_risk }}</span>
             </div>
-            <div class="stat-label">Academic Risk</div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Academic Risk</div>
         </div>
-        <div class="stat-card">
-            <div style="font-family:'Outfit'; font-size:1.4rem; font-weight:800; margin-bottom:6px;">
+        <div class="profile-section" style="margin-bottom:0; padding: 20px; text-align: center;">
+            <div style="margin-bottom:6px; min-height: 40px; display: flex; align-items: center; justify-content: center;">
                 <span class="badge {% if risk.behavioral_risk=='High'%}danger{% elif risk.behavioral_risk=='Medium'%}warning{% else %}success{% endif %}">{{ risk.behavioral_risk }}</span>
             </div>
-            <div class="stat-label">Behavioral Risk</div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Behavioral Risk</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ student.attendance|default('0') }}%</div>
-            <div class="stat-label">Attendance</div>
+        <div class="profile-section" style="margin-bottom:0; padding: 20px; text-align: center;">
+            <div style="font-family:'Outfit'; font-size:2.2rem; font-weight:800; line-height:1.2; margin-bottom:6px; color: var(--text-primary);">{{ student.attendance|default('0') }}%</div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Attendance</div>
         </div>
     </div>
 
     <!-- Explainability -->
     <div class="profile-section">
-        <h3 style="margin:0 0 14px; font-size:1.05rem;">🧠 Assessment — Key Influencing Factors</h3>
-        <ul style="color:#cbd5e1; font-size:0.92rem; line-height:1.8; padding-left:20px; margin:0;">
+        <h3 style="margin:0 0 14px; font-size:1.1rem; font-family: 'Outfit', sans-serif;">🧠 Assessment — Key Influencing Factors</h3>
+        <ul style="color: var(--text-secondary); font-size:0.95rem; line-height:1.8; padding-left:20px; margin:0;">
             {% for r in risk.reasons %}
             <li>{{ r }}</li>
             {% endfor %}
         </ul>
-        <div style="margin-top:12px; font-size:0.78rem; color:var(--text-muted);">
+        <div style="margin-top:16px; font-size:0.8rem; color:var(--text-muted); border-top: 1px solid #f4f4f5; padding-top: 12px;">
             Computed System Tracking · Confidence Score: {{ (risk.confidence * 100)|round }}%
         </div>
     </div>
 
     <!-- Academic Metrics -->
     <div class="profile-section">
-        <h3 style="margin:0 0 14px; font-size:1.05rem;"> Academic Summary</h3>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
-            <div><span style="color:var(--text-secondary); font-size:0.82rem;">SGPA</span><div style="font-size:1.5rem; font-weight:700; color:var(--accent-blue);">{{ student.sgpa|default('N/A') }}</div></div>
-            <div><span style="color:var(--text-secondary); font-size:0.82rem;">CGPA</span><div style="font-size:1.5rem; font-weight:700; color:var(--accent-blue);">{{ student.cgpa|default('N/A') }}</div></div>
-            <div><span style="color:var(--text-secondary); font-size:0.82rem;">Activity Points</span><div style="font-size:1.5rem; font-weight:700; color:var(--accent-green);">{{ student.activity_points|default('0') }}/50</div></div>
+        <h3 style="margin:0 0 14px; font-size:1.1rem; font-family: 'Outfit', sans-serif;">📖 Academic Summary</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; text-align: center;">
+            <div style="background: #fafaf9; padding: 14px; border-radius: 8px; border: 1px solid var(--border-light);">
+                <span style="color:var(--text-secondary); font-size:0.8rem; text-transform: uppercase; font-weight: 600;">SGPA</span>
+                <div style="font-size:1.6rem; font-weight:700; color: #0d9488; margin-top: 4px;">{{ student.sgpa|default('N/A') }}</div>
+            </div>
+            <div style="background: #fafaf9; padding: 14px; border-radius: 8px; border: 1px solid var(--border-light);">
+                <span style="color:var(--text-secondary); font-size:0.8rem; text-transform: uppercase; font-weight: 600;">CGPA</span>
+                <div style="font-size:1.6rem; font-weight:700; color: #0d9488; margin-top: 4px;">{{ student.cgpa|default('N/A') }}</div>
+            </div>
+            <div style="background: #fafaf9; padding: 14px; border-radius: 8px; border: 1px solid var(--border-light);">
+                <span style="color:var(--text-secondary); font-size:0.8rem; text-transform: uppercase; font-weight: 600;">Activity Points</span>
+                <div style="font-size:1.6rem; font-weight:700; color: #0d9488; margin-top: 4px;">{{ student.activity_points|default('0') }}/50</div>
+            </div>
         </div>
     </div>
 
     <!-- Weekly History -->
     {% if history and history|length > 0 %}
     <div class="profile-section">
-        <h3 style="margin:0 0 14px; font-size:1.05rem;"> Behavioral History</h3>
+        <h3 style="margin:0 0 14px; font-size:1.1rem; font-family: 'Outfit', sans-serif;">📊 Behavioral History</h3>
         <table class="data-table">
-            <tr><th>Week</th><th>Stress (1-10)</th><th>Academic Issues</th><th>Need Help</th></tr>
-            {% for h in history %}
-            <tr>
-                <td>Week {{ h.week }}</td>
-                <td class="{% if h.stress|int >= 7 %}text-danger{% elif h.stress|int >= 4 %}text-warning{% else %}text-success{% endif %}">{{ h.stress }}</td>
-                <td class="{% if h.academic_issues|lower == 'yes' %}text-danger{% else %}text-success{% endif %}">{{ h.academic_issues }}</td>
-                <td class="{% if h.need_help|lower == 'yes' %}text-danger{% else %}text-success{% endif %}">{{ h.need_help|default('No') }}</td>
-            </tr>
-            {% endfor %}
+            <thead>
+                <tr>
+                    <th>Week</th>
+                    <th>Stress (1-10)</th>
+                    <th>Academic Issues</th>
+                    <th>Need Help</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in history %}
+                <tr>
+                    <td>Week {{ h.week }}</td>
+                    <td class="{% if h.stress|int >= 7 %}danger-text{% elif h.stress|int >= 4 %}warning-text{% else %}success-text{% endif %}" style="font-weight: 600;">{{ h.stress }}</td>
+                    <td class="{% if h.academic_issues|lower == 'yes' %}danger-text{% else %}success-text{% endif %}" style="font-weight: 600;">{{ h.academic_issues }}</td>
+                    <td class="{% if h.need_help|lower == 'yes' %}danger-text{% else %}success-text{% endif %}" style="font-weight: 600;">{{ h.need_help|default('No') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
     {% endif %}
 
-    <div style="text-align:center; color:var(--text-muted); font-size:0.78rem; margin-top:16px;">
-        Generated: {{ now if now else 'N/A' }} · Intelligent Student Monitoring System v2.0
+    <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; margin-top:32px; border-top: 1px solid var(--border-light); padding-top: 16px;">
+        Generated: {{ now if now else 'N/A' }} · ScholarPulse Student Monitoring System v2.0
     </div>
 </div>
 </body>

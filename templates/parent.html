@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Parent Portal — ML Inference View</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Portal — ScholarPulse</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
         .parent-layout { max-width: 900px; margin: 40px auto; }
@@ -11,28 +12,43 @@
         .info-value { font-weight: 500; color: var(--text-primary); }
         
         .panel { background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 32px; margin-bottom: 24px; box-shadow: var(--shadow-soft); }
-        .panel-header { font-size: 1.1rem; font-weight: 600; margin: 0 0 24px 0; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .panel-header { font-size: 1.1rem; font-weight: 600; margin: 0 0 24px 0; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Outfit', sans-serif; }
 
         .risk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
-        .risk-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; text-align: center; }
+        .risk-box { background: #fafaf9; border: 1px solid var(--border-light); border-radius: 8px; padding: 20px; text-align: center; }
         .risk-value { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; font-family: 'Outfit', sans-serif; }
         .risk-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
 
         .danger-text { color: #dc2626; }
         .warning-text { color: #d97706; }
-        .success-text { color: #059669; }
+        .success-text { color: #0d9488; }
     </style>
 </head>
-<body>
+<body style="display: block; min-height: 100vh; background: #fafaf9; margin: 0; padding: 0;">
 
-<div class="parent-layout">
-    
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px;">
-        <div>
-            <h1 style="margin: 0; font-size: 1.8rem; font-weight: 600; color: var(--text-primary);">Parent Portal</h1>
-            <p style="margin: 4px 0 0 0; color: var(--text-secondary);">Target Student: {{ student.name }} ({{ student.usn }})</p>
+<!-- Cohesive Global Header -->
+<div style="width: 100%; border-bottom: 1px solid #e4e4e7; background: #ffffff;">
+    <div style="max-width: 900px; margin: 0 auto; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #0d9488; border-radius: 6px; color: #ffffff;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+            </div>
+            <span style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 700; color: #0f172a; letter-spacing: -0.4px;">ScholarPulse</span>
         </div>
-        <a href="/logout" class="btn secondary" style="padding: 10px 16px; font-size: 0.85rem;">Sign Out</a>
+        <div style="display: flex; gap: 16px; align-items: center;">
+            <span style="color: var(--text-secondary); font-size: 0.95rem;">Hello, Parent / Guardian</span>
+            <a href="/logout" class="btn secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 6px; border: 1px solid #cbd5e1;">Sign out</a>
+        </div>
+    </div>
+</div>
+
+<div class="parent-layout" style="margin-top: 40px; margin-bottom: 60px; padding: 0 20px;">
+    
+    <div style="margin-bottom: 32px; text-align: left;">
+        <h1 style="margin: 0; font-size: 1.8rem; font-weight: 600; color: var(--text-primary); font-family: 'Outfit', sans-serif;">Parent Portal</h1>
+        <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 1rem;">Monitoring Academic Progress & Risk Profile for **{{ student.name }}** ({{ student.usn }})</p>
     </div>
 
     <!-- ML Risk Summary Header -->
@@ -57,7 +73,7 @@
                 <div class="risk-label">Behavioral Risk</div>
             </div>
 
-            <div class="risk-box" style="background: {% if risk.level == 'High' %}#fee2e2{% elif risk.level == 'Medium' %}#fef3c7{% else %}#d1fae5{% endif %};">
+            <div class="risk-box" style="background: {% if risk.level == 'High' %}#fee2e2{% elif risk.level == 'Medium' %}#fef3c7{% else %}#e6f4f1{% endif %}; border: none;">
                 <div class="risk-value {% if risk.level == 'High' %}danger-text{% elif risk.level == 'Medium' %}warning-text{% else %}success-text{% endif %}">{{ risk.level }}</div>
                 <div class="risk-label">Final Computed Risk</div>
             </div>
@@ -69,37 +85,34 @@
     </div>
 
     <!-- Status Alert (Fallback) -->
-    <div class="alert-panel {% if risk.level == 'High' %}danger{% elif risk.level == 'Medium' %}warning{% else %}success{% endif %}" style="margin-bottom: 24px;">
+    <div class="alert-panel {% if risk.level == 'High' %}danger{% elif risk.level == 'Medium' %}warning{% else %}success{% endif %}" style="margin-bottom: 24px; border-left: 4px solid {% if risk.level == 'High' %}var(--color-danger){% elif risk.level == 'Medium' %}var(--color-warning){% else %}var(--color-success){% endif %}; text-align: left;">
         {% if risk.level == 'High' %}
-            <span style="font-size: 1.5rem;"></span>
             <div>
                 <strong>High Dropout Probability Detected</strong>
-                <p>The system's predictive logic flags a significant risk profile. Intervention is highly recommended.</p>
+                <p style="margin-top: 4px; font-size: 0.9rem;">The system's predictive logic flags a significant risk profile. Intervention and discussion with the faculty mentor are highly recommended.</p>
             </div>
         {% elif risk.level == 'Medium' %}
-            <span style="font-size: 1.5rem;"></span>
             <div>
                 <strong>Elevated Risk Flags</strong>
-                <p>Certain indicators are causing the system to monitor {{ student.name }} closely.</p>
+                <p style="margin-top: 4px; font-size: 0.9rem;">Certain behavioral or academic indicators have caused the system to increase risk monitoring. Keep in touch with {{ student.name }}.</p>
             </div>
         {% else %}
-            <span style="font-size: 1.5rem;"></span>
             <div>
                 <strong>Stable Tracking</strong>
-                <p>The system evaluates {{ student.name }} as stable with minimal current risk triggers.</p>
+                <p style="margin-top: 4px; font-size: 0.9rem;">The system evaluates {{ student.name }} as stable with minimal current risk triggers. Excellent progress!</p>
             </div>
         {% endif %}
     </div>
 
     <!-- Academic Record Section -->
-    <div class="panel" style="padding: 24px;">
+    <div class="panel" style="padding: 24px; text-align: left;">
         <div class="panel-header" style="font-size: 1.2rem; font-weight: 500; margin-bottom: 16px; text-transform: none; letter-spacing: normal;">
             Academic Performance Details
         </div>
         {% if student.marks %}
-        <div style="margin-bottom: 16px;">
-            <label style="font-weight: 500; margin-right: 8px; font-size: 0.9rem; color: var(--text-secondary);">Select Semester:</label>
-            <select id="semSelect" onchange="showSemester(this.value)" style="padding: 6px; border-radius: 4px; border: 1px solid var(--border-light);">
+        <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <label style="font-weight: 500; font-size: 0.9rem; color: var(--text-secondary);">Select Semester:</label>
+            <select id="semSelect" onchange="showSemester(this.value)" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-light); width: auto; font-size: 0.9rem; background: #ffffff;">
                 {% for sem in student.marks.keys() %}
                 <option value="{{ sem }}">Semester {{ sem }}</option>
                 {% endfor %}
@@ -111,7 +124,7 @@
             
             {% set summary = student.sem_summaries.get(sem) %}
             {% if summary %}
-            <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.9rem;">
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; background: #fafaf9; padding: 14px; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.9rem;">
                 <div><span style="color: var(--text-secondary);">Attendance:</span> <strong style="color: var(--text-primary);">{{ summary.attendance }}%</strong></div>
                 <div><span style="color: var(--text-secondary);">SGPA:</span> <strong style="color: var(--text-primary);">{{ summary.sgpa }}</strong></div>
                 <div><span style="color: var(--text-secondary);">CGPA:</span> <strong style="color: var(--text-primary);">{{ summary.cgpa }}</strong></div>
@@ -121,7 +134,7 @@
 
             <div style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 0.95rem;">
-                    <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                    <tr style="background: #fafaf9; border-bottom: 1px solid var(--border-light);">
                         <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-weight: 600;">Subject</th>
                         <th style="padding: 12px; text-align: center; color: var(--text-secondary); font-weight: 600;">CIE</th>
                         <th style="padding: 12px; text-align: center; color: var(--text-secondary); font-weight: 600;">SEE</th>
@@ -136,7 +149,7 @@
                         {% if total < 40 or see < 35 %}
                             {% set _ = weak_subjects.append(m.subject) %}
                         {% endif %}
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <tr style="border-bottom: 1px solid #f4f4f5;">
                         <td style="padding: 12px; text-align: left; font-weight: 500;">{{ m.subject }}</td>
                         <td style="padding: 12px; text-align: center;">{{ cie }}</td>
                         <td style="padding: 12px; text-align: center;">{{ see }}</td>
@@ -178,15 +191,15 @@
             });
         </script>
         {% else %}
-        <div style="padding: 24px; text-align: center; color: var(--text-muted); background: #f8fafc; border-radius: 6px;">
+        <div style="padding: 24px; text-align: center; color: var(--text-muted); background: #fafaf9; border-radius: 8px; border: 1px dashed var(--border-light);">
             No academic marks recorded yet.
         </div>
         {% endif %}
     </div>
 
     <!-- Teacher Action -->
-    <div class="panel" style="padding: 24px;">
-        <h2 style="margin: 0 0 16px 0; font-size: 1.2rem; font-weight: 500;">Assigned Faculty Mentor</h2>
+    <div class="panel" style="padding: 24px; text-align: left;">
+        <h2 style="margin: 0 0 16px 0; font-size: 1.2rem; font-weight: 500; font-family: 'Outfit', sans-serif;">Assigned Faculty Mentor</h2>
         <p style="color: var(--text-secondary); line-height: 1.5; font-size: 0.95rem; margin-bottom: 20px;">
             Discuss these analytics directly with {{ student.name }}'s designated mentor. 
         </p>
@@ -197,7 +210,7 @@
         </div>
         
         <form action="/parent/request_meeting" method="POST" style="margin-top: 16px;">
-            <button type="submit" class="btn secondary" style="width: 100%;">Request Formal Evaluation Meeting</button>
+            <button type="submit" class="btn secondary" style="width: 100%; border: 1px solid #cbd5e1;">Request Formal Evaluation Meeting</button>
         </form>
     </div>
 

@@ -7,170 +7,177 @@
     <link rel="stylesheet" href="/static/style.css">
     <style>
         :root {
-            --accent: #6366f1;
-            --accent-2: #8b5cf6;
+            --accent: #0d9488;
+            --accent-2: #0f766e;
             --danger: #ef4444;
             --success: #10b981;
             --warn: #f59e0b;
-            --text-dim: #94a3b8;
+            --text-dim: #71717a;
+        }
+
+        body {
+            background: #fafaf9;
+            color: #0f172a;
         }
 
         /* ── Layout ─────────────────────────────────── */
-        .admin-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+        .admin-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; background: #fafaf9; }
 
         /* ── Sidebar ─────────────────────────────────── */
         .sidebar {
-            background: rgba(10, 15, 30, 0.95);
-            border-right: 1px solid rgba(255,255,255,0.05);
+            background: #ffffff;
+            border-right: 1px solid #e4e4e7;
             padding: 30px 0;
             position: sticky; top: 0; height: 100vh; overflow-y: auto;
         }
         .sidebar-logo {
             padding: 0 24px 24px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid #e4e4e7;
             margin-bottom: 20px;
         }
-        .sidebar-logo h2 { font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin: 0; background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+        .sidebar-logo h2 { font-family: 'Outfit', sans-serif; font-size: 1.15rem; margin: 0; color: #0d9488; font-weight: 700; }
         .sidebar-logo p { color: var(--text-dim); font-size: 0.78rem; margin: 4px 0 0; }
-        .nav-section-label { padding: 8px 24px; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: #475569; font-weight: 600; }
+        .nav-section-label { padding: 8px 24px; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: #a1a1aa; font-weight: 600; }
         .nav-item {
             display: flex; align-items: center; gap: 12px;
-            padding: 11px 24px; color: #94a3b8; text-decoration: none;
+            padding: 11px 24px; color: #52525b; text-decoration: none;
             font-size: 0.9rem; font-weight: 500; cursor: pointer;
             border-left: 3px solid transparent; transition: all 0.2s;
         }
         .nav-item:hover, .nav-item.active {
-            background: rgba(99,102,241,0.1); color: #a5b4fc;
-            border-left-color: #6366f1;
+            background: #f0fdfa; color: #0d9488;
+            border-left-color: #0d9488;
         }
         .nav-item svg { flex-shrink: 0; }
-        .sidebar-footer { padding: 20px 24px 0; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 20px; }
+        .sidebar-footer { padding: 20px 24px 0; border-top: 1px solid #e4e4e7; margin-top: 20px; }
 
         /* ── Danger Zone ─────────────────────────────── */
         .danger-zone-section { display: block; }
         .danger-card {
-            background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.15);
+            background: #fff5f5; border: 1px solid #fecaca;
             border-radius: 12px; padding: 18px 22px;
             display: flex; align-items: center; justify-content: space-between;
             margin-bottom: 12px; transition: background 0.2s, border-color 0.2s;
         }
-        .danger-card:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); }
-        .danger-card-info h4 { margin: 0 0 4px; color: #fca5a5; font-size: 0.95rem; }
-        .danger-card-info p { margin: 0; color: #94a3b8; font-size: 0.82rem; }
-        .btn-clear { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); padding: 8px 18px; border-radius: 7px; cursor: pointer; font-weight: 600; font-size: 0.85rem; font-family: 'Inter', sans-serif; transition: all 0.2s; white-space: nowrap; }
-        .btn-clear:hover { background: rgba(239,68,68,0.3); }
-        .nuke-box { background: rgba(239,68,68,0.08); border: 2px solid rgba(239,68,68,0.4); border-radius: 16px; padding: 30px; text-align: center; margin-top: 30px; }
-        .nuke-box h3 { color: #ef4444; font-family: 'Outfit', sans-serif; margin: 0 0 8px; font-size: 1.3rem; }
-        .nuke-box p { color: #94a3b8; margin: 0 0 20px; font-size: 0.9rem; }
-        .btn-nuke { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; padding: 13px 32px; border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 1rem; font-family: 'Outfit', sans-serif; letter-spacing: 0.03em; transition: opacity 0.2s; }
-        .btn-nuke:hover { opacity: 0.85; }
+        .danger-card:hover { background: #fef2f2; border-color: #fca5a5; }
+        .danger-card-info h4 { margin: 0 0 4px; color: #b91c1c; font-size: 0.95rem; }
+        .danger-card-info p { margin: 0; color: #71717a; font-size: 0.82rem; }
+        .btn-clear { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 8px 18px; border-radius: 7px; cursor: pointer; font-weight: 600; font-size: 0.85rem; font-family: 'Inter', sans-serif; transition: all 0.2s; white-space: nowrap; }
+        .btn-clear:hover { background: #fecaca; }
+        .nuke-box { background: #fff5f5; border: 2px solid #ef4444; border-radius: 16px; padding: 30px; text-align: center; margin-top: 30px; }
+        .nuke-box h3 { color: #dc2626; font-family: 'Outfit', sans-serif; margin: 0 0 8px; font-size: 1.3rem; }
+        .nuke-box p { color: #71717a; margin: 0 0 20px; font-size: 0.9rem; }
+        .btn-nuke { background: #dc2626; color: #fff; border: none; padding: 13px 32px; border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 1rem; font-family: 'Outfit', sans-serif; letter-spacing: 0.03em; transition: background 0.2s; }
+        .btn-nuke:hover { background: #b91c1c; }
         /* ── Confirm modal ───────────────────────────── */
-        .confirm-input { width: 100%; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 10px 14px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.95rem; box-sizing: border-box; outline: none; text-align: center; letter-spacing: 0.06em; margin-top: 14px; }
-        .confirm-input:focus { border-color: #ef4444; }
-        .btn-confirm-delete { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; opacity: 0.4; transition: opacity 0.2s; }
+        .confirm-input { width: 100%; background: #ffffff; border: 1px solid #cbd5e1; color: #b91c1c; padding: 10px 14px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.95rem; box-sizing: border-box; outline: none; text-align: center; letter-spacing: 0.06em; margin-top: 14px; }
+        .confirm-input:focus { border-color: #dc2626; }
+        .btn-confirm-delete { background: #dc2626; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; opacity: 0.4; transition: opacity 0.2s; }
         .btn-confirm-delete.ready { opacity: 1; }
 
         /* ── Main Content ─────────────────────────────── */
-        .main-content { padding: 40px; overflow-y: auto; }
+        .main-content { padding: 40px; overflow-y: auto; background: #fafaf9; }
         .page-header { margin-bottom: 35px; }
-        .page-header h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; margin: 0 0 6px; }
+        .page-header h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; margin: 0 0 6px; color: #0f172a; }
         .page-header p { color: var(--text-dim); margin: 0; font-size: 0.95rem; }
 
         /* ── Stats Cards ─────────────────────────────── */
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
         .stat-card {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(255,255,255,0.07);
+            background: #ffffff;
+            border: 1px solid #e4e4e7;
             border-radius: 16px; padding: 24px;
             position: relative; overflow: hidden;
             transition: transform 0.2s, border-color 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
         }
-        .stat-card:hover { transform: translateY(-2px); border-color: rgba(99,102,241,0.3); }
+        .stat-card:hover { transform: translateY(-2px); border-color: rgba(13, 148, 136, 0.3); }
         .stat-card::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
         }
-        .stat-card.teachers::before { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
-        .stat-card.students::before { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
-        .stat-card.parents::before { background: linear-gradient(90deg, #10b981, #059669); }
+        .stat-card.teachers::before { background: #0d9488; }
+        .stat-card.students::before { background: #0d9488; }
+        .stat-card.parents::before { background: #0d9488; }
         .stat-icon {
             width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
         }
-        .stat-card.teachers .stat-icon { background: rgba(99,102,241,0.15); }
-        .stat-card.students .stat-icon { background: rgba(59,130,246,0.15); }
-        .stat-card.parents .stat-icon { background: rgba(16,185,129,0.15); }
+        .stat-card.teachers .stat-icon { background: rgba(13, 148, 136, 0.1); }
+        .stat-card.students .stat-icon { background: rgba(13, 148, 136, 0.1); }
+        .stat-card.parents .stat-icon { background: rgba(13, 148, 136, 0.1); }
         .stat-number { font-family: 'Outfit', sans-serif; font-size: 2.4rem; font-weight: 800; line-height: 1; margin-bottom: 6px; }
-        .stat-card.teachers .stat-number { color: #a5b4fc; }
-        .stat-card.students .stat-number { color: #60a5fa; }
-        .stat-card.parents .stat-number { color: #34d399; }
+        .stat-card.teachers .stat-number { color: #0d9488; }
+        .stat-card.students .stat-number { color: #0d9488; }
+        .stat-card.parents .stat-number { color: #0d9488; }
         .stat-label { color: var(--text-dim); font-size: 0.9rem; }
 
         /* ── Section Tabs ─────────────────────────────── */
         .section { display: none; }
         .section.active { display: block; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .section-header h2 { font-family: 'Outfit', sans-serif; font-size: 1.4rem; margin: 0; }
+        .section-header h2 { font-family: 'Outfit', sans-serif; font-size: 1.4rem; margin: 0; color: #0f172a; }
 
         /* ── Admin Table ─────────────────────────────── */
-        .admin-table-wrap { background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; overflow: hidden; }
+        .admin-table-wrap { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); }
         .admin-table { width: 100%; border-collapse: collapse; }
-        .admin-table th { padding: 14px 20px; text-align: left; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: #475569; font-weight: 600; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .admin-table td { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.04); color: #cbd5e1; font-size: 0.9rem; }
+        .admin-table th { padding: 14px 20px; text-align: left; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: #52525b; font-weight: 600; background: #f4f4f5; border-bottom: 1px solid #e4e4e7; }
+        .admin-table td { padding: 14px 20px; border-bottom: 1px solid #f4f4f5; color: #1e293b; font-size: 0.9rem; }
         .admin-table tr:last-child td { border-bottom: none; }
-        .admin-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .admin-table tr:hover td { background: #fafaf9; }
 
         /* ── Badges ──────────────────────────────────── */
         .role-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .role-badge.teacher { background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
-        .role-badge.student { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
-        .role-badge.parent { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
-        .role-badge.danger { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
-        .role-badge.warning { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
-        .role-badge.success { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+        .role-badge.teacher { background: rgba(13, 148, 136, 0.1); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.2); }
+        .role-badge.student { background: rgba(13, 148, 136, 0.1); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.2); }
+        .role-badge.parent { background: rgba(13, 148, 136, 0.1); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.2); }
+        .role-badge.danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .role-badge.warning { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+        .role-badge.success { background: #d1fae5; color: #059669; border: 1px solid #6ee7b7; }
 
         /* ── Action Buttons ──────────────────────────── */
         .btn-sm { padding: 6px 14px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 500; text-decoration: none; display: inline-block; transition: all 0.2s; }
-        .btn-edit { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
-        .btn-edit:hover { background: rgba(59,130,246,0.3); }
-        .btn-danger { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
-        .btn-danger:hover { background: rgba(239,68,68,0.25); }
-        .btn-add { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border: none; padding: 10px 22px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
-        .btn-add:hover { opacity: 0.9; }
+        .btn-edit { background: #f4f4f5; color: #1e293b; border: 1px solid #d4d4d8; }
+        .btn-edit:hover { background: #e4e4e7; }
+        .btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-add { background: #0d9488; color: #fff; border: none; padding: 10px 22px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s; box-shadow: 0 1px 2px rgba(13, 148, 136, 0.1); }
+        .btn-add:hover { background: #0f766e; }
 
         /* ── Modal ──────────────────────────────────── */
         .modal-overlay {
             display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.7); z-index: 1000;
+            background: rgba(0,0,0,0.5); z-index: 1000;
             align-items: center; justify-content: center;
         }
         .modal-overlay.open { display: flex; }
         .modal {
-            background: #0f172a; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px; padding: 36px; width: 100%; max-width: 480px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+            background: #ffffff; border: 1px solid #cbd5e1;
+            border-radius: 16px; padding: 36px; width: 100%; max-width: 480px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             animation: slideUp 0.25s ease;
+            color: #0f172a;
         }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal h3 { font-family: 'Outfit', sans-serif; margin: 0 0 24px; font-size: 1.3rem; }
+        .modal h3 { font-family: 'Outfit', sans-serif; margin: 0 0 24px; font-size: 1.3rem; color: #0f172a; }
         .modal .form-group { margin-bottom: 18px; }
-        .modal label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 7px; font-weight: 500; }
+        .modal label { display: block; font-size: 0.85rem; color: #52525b; margin-bottom: 7px; font-weight: 600; }
         .modal input, .modal select {
-            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            color: #f8fafc; padding: 10px 14px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.9rem;
+            width: 100%; background: #ffffff; border: 1px solid #cbd5e1;
+            color: #0f172a; padding: 10px 14px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.9rem;
             box-sizing: border-box; outline: none; transition: border-color 0.2s;
         }
-        .modal input:focus, .modal select:focus { border-color: #6366f1; }
-        .modal select option { background: #0f172a; }
+        .modal input:focus, .modal select:focus { border-color: #0d9488; }
+        .modal select option { background: #ffffff; color: #0f172a; }
         .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
-        .btn-cancel { background: rgba(255,255,255,0.06); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); padding: 10px 22px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
-        .btn-save { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+        .btn-cancel { background: #f4f4f5; color: #52525b; border: 1px solid #cbd5e1; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+        .btn-save { background: #0d9488; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
 
         /* ── Flash ──────────────────────────────────── */
-        .flash-msg { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #34d399; padding: 12px 18px; border-radius: 10px; margin-bottom: 24px; font-size: 0.9rem; }
-        .flash-msg.error { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #f87171; }
+        .flash-msg { background: #d1fae5; border: 1px solid #a7f3d0; color: #065f46; padding: 12px 18px; border-radius: 10px; margin-bottom: 24px; font-size: 0.9rem; }
+        .flash-msg.error { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
 
         /* ── Search bar ──────────────────────────────── */
-        .search-bar { background: rgba(15,23,42,0.5); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; padding: 9px 16px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; width: 220px; }
-        .search-bar:focus { border-color: #6366f1; }
+        .search-bar { background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; padding: 9px 16px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; width: 220px; transition: border-color 0.2s; }
+        .search-bar:focus { border-color: #0d9488; }
 
         /* ── Empty state ─────────────────────────────── */
         .empty-state { text-align: center; padding: 50px 20px; color: var(--text-dim); }
@@ -183,9 +190,16 @@
 
     <!-- ── SIDEBAR ───────────────────────────────────── -->
     <aside class="sidebar">
-        <div class="sidebar-logo">
-            <h2> Admin Panel</h2>
-            <p>Student Risk Prediction System</p>
+        <div class="sidebar-logo" style="display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #e4e4e7; padding: 0 24px 24px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #0d9488; border-radius: 6px; color: #ffffff; flex-shrink: 0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+            </div>
+            <div>
+                <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; margin: 0; color: #0f172a; font-weight: 700; letter-spacing: -0.4px;">ScholarPulse</h2>
+                <p style="color: var(--text-dim); font-size: 0.78rem; margin: 2px 0 0;">Admin Portal</p>
+            </div>
         </div>
 
         <div class="nav-section-label">Overview</div>
@@ -261,67 +275,138 @@
                         <svg width="22" height="22" fill="none" stroke="#34d399" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     </div>
                     <div class="stat-number">{{ parents|length }}</div>
+                    <div class="stat-label">Parents Registered</div>
                 </div>
             </div>
 
             <!-- AI Inference Status Panel -->
-            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 25px; margin-bottom: 30px; position: relative; overflow: hidden; box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.1);">
-                <div style="position: absolute; top: -50%; left: -10%; width: 50%; height: 200%; background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);"></div>
+            <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 16px; padding: 25px; margin-bottom: 30px; position: relative; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);">
                 <div style="position: relative; z-index: 1;">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>
                         </svg>
-                        <h3 style="margin: 0; color: #f8fafc; font-family: 'Outfit', sans-serif; font-size: 1.4rem;">Machine Learning Inference Engine</h3>
+                        <h3 style="margin: 0; color: #0f172a; font-family: 'Outfit', sans-serif; font-size: 1.4rem;">Machine Learning Inference Engine</h3>
                         {% if ml_status.active %}
-                            <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Active Model</span>
+                            <span style="background: rgba(13, 148, 136, 0.1); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.2); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Active Model</span>
                         {% else %}
-                            <span style="background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">System Fallback Logic</span>
+                            <span style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">System Fallback Logic</span>
                         {% endif %}
                     </div>
-                    <p style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 0.95rem; max-width: 800px; line-height: 1.5;">The system is actively using the <strong>{{ ml_status.algorithm }}</strong> via the `scikit-learn` pipeline to evaluate multi-factor check-in data and generate realtime Dropout Probabilities with SHAP inference.</p>
+                    <p style="margin: 0 0 20px 0; color: #52525b; font-size: 0.95rem; max-width: 800px; line-height: 1.5;">The system is actively using the <strong>{{ ml_status.algorithm }}</strong> via the `scikit-learn` pipeline to evaluate multi-factor check-in data and generate realtime Dropout Probabilities with SHAP inference.</p>
                     
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 12px 18px; border-radius: 8px;">
+                        <div style="background: #fafaf9; border: 1px solid #e4e4e7; padding: 12px 18px; border-radius: 8px;">
                             <div style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600;">Data Features Processed</div>
-                            <div style="color: #f8fafc; font-size: 0.95rem; font-weight: 500; font-family: monospace;">
+                            <div style="color: #0f172a; font-size: 0.95rem; font-weight: 500; font-family: monospace;">
                                 {{ ml_status.features|join(' | ') }}
                             </div>
                         </div>
-                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 12px 18px; border-radius: 8px;">
+                        <div style="background: #fafaf9; border: 1px solid #e4e4e7; padding: 12px 18px; border-radius: 8px;">
                             <div style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600;">Sub-Model Hyperparameters</div>
-                            <div style="color: #f8fafc; font-size: 0.95rem; font-weight: 500;">{{ ml_status.trees }} Decision Trees / Depth {{ ml_status.max_depth }}</div>
+                            <div style="color: #0f172a; font-size: 0.95rem; font-weight: 500;">{{ ml_status.trees }} Decision Trees / Depth {{ ml_status.max_depth }}</div>
                         </div>
                     </div>
-                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; max-width: 800px;">
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e4e4e7; display: flex; justify-content: space-between; align-items: center; max-width: 800px;">
                         <div>
-                            <h4 style="margin: 0 0 4px; color: #f8fafc; font-size: 1rem;">Global Risk Engine Control</h4>
-                            <p style="margin: 0; color: #94a3b8; font-size: 0.85rem;">Export raw system intelligence or force live predictive retraining directly on current student features.</p>
+                            <h4 style="margin: 0 0 4px; color: #0f172a; font-size: 1rem;">Global Risk Engine Control</h4>
+                            <p style="margin: 0; color: #52525b; font-size: 0.85rem;">Export raw system intelligence or force live predictive retraining directly on current student features.</p>
                         </div>
                         <div style="display: flex; gap: 10px;">
-                            <a href="/admin/export_training_data" class="btn-add" style="background: rgba(255, 255, 255, 0.1); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px 16px; font-size: 0.85rem; text-decoration: none;">
+                            <a href="/admin/export_training_data" class="btn-add" style="background: #f4f4f5; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 16px; font-size: 0.85rem; text-decoration: none;">
                                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                                 Export Dataset
                             </a>
                             <form method="POST" action="/admin/retrain_global_model" style="margin:0;" onsubmit="return confirm('Retrain global inference engine using current live data');">
-                                <button type="submit" class="btn-add" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 16px; font-size: 0.85rem; cursor: pointer;">
+                                <button type="submit" class="btn-add" style="background: rgba(13, 148, 136, 0.1); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.2); padding: 8px 16px; font-size: 0.85rem; cursor: pointer;">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
                                     Live Retrain
                                 </button>
                             </form>
                         </div>
                     </div>
+
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e4e4e7; max-width: 800px; text-align: left;">
+                        <h4 style="margin: 0 0 12px; color: #0f172a; font-size: 1rem; font-family: 'Outfit', sans-serif;">Retraining Strategy Configuration</h4>
+                        
+                        <form method="POST" action="/admin/save_retrain_settings" style="margin: 0; background: #fafaf9; border: 1px solid #e4e4e7; padding: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 250px;">
+                                <div style="display: flex; gap: 20px; align-items: center;">
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; color: #0f172a; cursor: pointer;">
+                                        <input type="radio" name="retrain_mode" value="manual" {% if retrain_settings.retrain_mode == 'manual' %}checked{% endif %} style="accent-color: #0d9488;">
+                                        Manual Retraining
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; color: #0f172a; cursor: pointer;">
+                                        <input type="radio" name="retrain_mode" value="automatic" {% if retrain_settings.retrain_mode == 'automatic' %}checked{% endif %} style="accent-color: #0d9488;">
+                                        Automatic (Continuous)
+                                    </label>
+                                </div>
+                                <p style="margin: 8px 0 0 0; color: #52525b; font-size: 0.8rem; line-height: 1.4;">
+                                    {% if retrain_settings.retrain_mode == 'automatic' %}
+                                        <span style="color: #0d9488; font-weight: 600;">● Active:</span> Models retrain automatically when students check in or marks are uploaded.
+                                    {% else %}
+                                        <span style="color: #71717a; font-weight: 600;">● Inactive:</span> Models remain static until triggered manually.
+                                    {% endif %}
+                                    {% if retrain_settings.last_global_train_time %}
+                                        <br><span style="color: #71717a; display: inline-block; margin-top: 4px;">Last trained: Global ({{ retrain_settings.last_global_train_time }}) {% if retrain_settings.last_subject_train_time %}· Subject ({{ retrain_settings.last_subject_train_time }}){% endif %}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <button type="submit" class="btn-add" style="padding: 8px 18px; font-size: 0.85rem; height: auto;">Save Strategy</button>
+                        </form>
+                    </div>
                     
-                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; max-width: 800px;">
-                        <div>
-                            <h4 style="margin: 0 0 4px; color: #f8fafc; font-size: 1rem;">Subject Performance Sub-Model</h4>
-                            <p style="margin: 0; color: #94a3b8; font-size: 0.85rem;">Dynamically learn Pass/Fail bounds by appending Academic Marks directly.</p>
-                        </div>
                         <button class="btn-add" onclick="openModal('modal-train-subject')" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 16px; font-size: 0.85rem;">
                             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                             Upload CSV to Retrain
                         </button>
-                    </div>
+            </div>
+
+            <!-- Live Active Sessions Tracker -->
+            <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 16px; padding: 24px; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); text-align: left;">
+                <h3 style="margin: 0 0 8px 0; color: #0f172a; font-family: 'Outfit', sans-serif; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    Live User Activity Tracker
+                </h3>
+                <p style="color: #52525b; font-size: 0.85rem; margin: 0 0 20px 0;">Monitor active user sessions and track total time spent on the portal.</p>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <tr>
+                            <th>User ID / Name</th>
+                            <th>Role</th>
+                            <th>Session Started</th>
+                            <th>Active Time Spent</th>
+                            <th>Last Active</th>
+                            <th>Status</th>
+                        </tr>
+                        {% for user in live_users %}
+                        <tr>
+                            <td style="font-weight: 500; color: #0f172a;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span>{{ user.name }}</span>
+                                    <code style="color: #71717a; font-size: 0.78rem;">{{ user.user_id }}</code>
+                                </div>
+                            </td>
+                            <td><span class="role-badge {{ user.role|lower }}">{{ user.role }}</span></td>
+                            <td style="color: #52525b; font-family: monospace;">{{ user.session_start }}</td>
+                            <td style="font-weight: 600; color: #0f172a;">{{ user.time_spent }}</td>
+                            <td style="color: #52525b; font-family: monospace;">{{ user.last_seen }}</td>
+                            <td>
+                                <span class="role-badge {% if user.status == 'Online' %}success{% else %}warning{% endif %}" style="padding: 2px 8px; font-size: 0.7rem; text-transform: uppercase;">
+                                    {{ user.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-state" style="padding: 30px; text-align: center; color: #71717a;">
+                                No live user sessions currently active.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
                 </div>
             </div>
 

@@ -94,7 +94,77 @@ def inject_ml_status():
 # ═══════════════════════════════════════════════════════════════
 # DATA HELPERS
 # ═══════════════════════════════════════════════════════════════
+_MODELS_LOADED_FROM_BACKEND = False
+
+def load_models():
+    global _ML_MODEL, _ML_FEATURE_NAMES, _SUBJECT_MODEL, _MODELS_LOADED_FROM_BACKEND
+    backend_url = os.environ.get("RENDER_BACKEND_URL")
+    api_key = os.environ.get("INTERNAL_API_KEY")
+    
+    if backend_url and api_key:
+        import requests
+        import pickle
+        success_count = 0
+        for model_name, file_name in [("risk", "risk_model.pkl"), ("subject", "subject_model.pkl")]:
+            try:
+                r = requests.get(
+                    f"{backend_url.rstrip('/')}/api/internal/get_model",
+                    params={"file": file_name},
+                    headers={"Authorization": f"Bearer {api_key}"},
+                    timeout=10
+                )
+                if r.status_code == 200:
+                    model_data = pickle.loads(r.content)
+                    if model_name == "risk":
+                        if isinstance(model_data, dict):
+                            _ML_MODEL = model_data['model']
+                            _ML_FEATURE_NAMES = model_data.get('feature_names', _ML_FEATURE_NAMES)
+                        else:
+                            _ML_MODEL = model_data
+                    else:
+                        if isinstance(model_data, dict):
+                            _SUBJECT_MODEL = model_data.get('model', model_data)
+                        else:
+                            _SUBJECT_MODEL = model_data
+                    success_count += 1
+                    print(f"INFO: Loaded {file_name} from Render backend.")
+            except Exception as e:
+                print(f"WARN: Failed to download {file_name} from Render backend - {str(e)}")
+        if success_count == 2:
+            _MODELS_LOADED_FROM_BACKEND = True
+
+@app.before_request
+def ensure_models_loaded_on_vercel():
+    if os.environ.get("RENDER_BACKEND_URL") and not _MODELS_LOADED_FROM_BACKEND:
+        load_models()
+
 def get_df(filepath):
+    backend_url = os.environ.get("RENDER_BACKEND_URL")
+    api_key = os.environ.get("INTERNAL_API_KEY")
+    
+    if backend_url and api_key:
+        import requests
+        filename = os.path.basename(filepath)
+        try:
+            r = requests.get(
+                f"{backend_url.rstrip('/')}/api/internal/get_data",
+                params={"file": filename},
+                headers={"Authorization": f"Bearer {api_key}"},
+                timeout=5
+            )
+            if r.status_code == 200:
+                string_cols = ['usn', 'teacher_id', 'mentor_id', 'parent_id', 'parent_phone']
+                import io
+                content = r.text
+                stream = io.StringIO(content)
+                header = pd.read_csv(stream, nrows=0)
+                dtype_dict = {col: str for col in string_cols if col in header.columns}
+                return pd.read_csv(io.StringIO(content), dtype=dtype_dict)
+            else:
+                print(f"WARN: Render backend returned status {r.status_code} for {filename}")
+        except Exception as e:
+            print(f"WARN: Failed to fetch {filename} from Render backend - {str(e)}")
+
     if not os.path.exists(filepath): return pd.DataFrame()
     try:
         string_cols = ['usn', 'teacher_id', 'mentor_id', 'parent_id', 'parent_phone']
@@ -108,6 +178,28 @@ def get_df(filepath):
         except Exception: return pd.DataFrame()
 
 def save_df(df, filepath):
+    backend_url = os.environ.get("RENDER_BACKEND_URL")
+    api_key = os.environ.get("INTERNAL_API_KEY")
+    
+    if backend_url and api_key:
+        import requests
+        filename = os.path.basename(filepath)
+        csv_buffer = io.StringIO()
+        df.to_csv(csv_buffer, index=False)
+        try:
+            r = requests.post(
+                f"{backend_url.rstrip('/')}/api/internal/save_data",
+                json={"file": filename, "content": csv_buffer.getvalue()},
+                headers={"Authorization": f"Bearer {api_key}"},
+                timeout=5
+            )
+            if r.status_code == 200:
+                return
+            else:
+                print(f"WARN: Render backend returned status {r.status_code} for saving {filename}")
+        except Exception as e:
+            print(f"CRITICAL: Failed to save {filename} to Render backend - {str(e)}")
+
     try:
         df.to_csv(filepath, index=False)
     except Exception as e:
@@ -934,6 +1026,68 @@ def login_admin():
         if result: return result
         flash("Invalid credentials or role mismatch.")
     return render_template("login.html", preselect_admin=True)
+
+# ═══════════════════════════════════════════════════════════════
+# INTERNAL API STORAGE ENDPOINTS (RENDER BACKEND)
+# ═══════════════════════════════════════════════════════════════
+@app.route("/api/internal/get_data")
+def internal_get_data():
+    api_key = os.environ.get("INTERNAL_API_KEY")
+    auth_header = request.headers.get("Authorization")
+    if not api_key or auth_header != f"Bearer {api_key}":
+        return jsonify({"error": "Unauthorized"}), 401
+        
+    filename = request.args.get("file")
+    if not filename or ".." in filename or "/" in filename or "\\" in filename:
+        return jsonify({"error": "Invalid file path"}), 400
+        
+    filepath = os.path.join("data", filename)
+    if not os.path.exists(filepath):
+        return "", 404
+        
+    with open(filepath, "r", encoding="utf-8") as f:
+        content = f.read()
+    return content, 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+@app.route("/api/internal/save_data", methods=["POST"])
+def internal_save_data():
+    api_key = os.environ.get("INTERNAL_API_KEY")
+    auth_header = request.headers.get("Authorization")
+    if not api_key or auth_header != f"Bearer {api_key}":
+        return jsonify({"error": "Unauthorized"}), 401
+        
+    data = request.json
+    filename = data.get("file")
+    content = data.get("content")
+    
+    if not filename or ".." in filename or "/" in filename or "\\" in filename:
+        return jsonify({"error": "Invalid file path"}), 400
+        
+    filepath = os.path.join("data", filename)
+    os.makedirs("data", exist_ok=True)
+    
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(content)
+    return jsonify({"success": True}), 200
+
+@app.route("/api/internal/get_model")
+def internal_get_model():
+    api_key = os.environ.get("INTERNAL_API_KEY")
+    auth_header = request.headers.get("Authorization")
+    if not api_key or auth_header != f"Bearer {api_key}":
+        return jsonify({"error": "Unauthorized"}), 401
+        
+    filename = request.args.get("file")
+    if filename not in ["risk_model.pkl", "subject_model.pkl"]:
+        return jsonify({"error": "Invalid file"}), 400
+        
+    filepath = os.path.join("models", filename)
+    if not os.path.exists(filepath):
+        return jsonify({"error": "File not found"}), 404
+        
+    from flask import send_file
+    return send_file(filepath, mimetype="application/octet-stream")
+
 
 def setup_parent_account(usn, parent_name, parent_email, parent_phone):
     parent_name = str(parent_name).strip() if pd.notna(parent_name) else ""

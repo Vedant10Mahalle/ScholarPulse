@@ -1739,12 +1739,34 @@ def admin_upload_csv(entity):
 @app.route("/admin/train_model", methods=["POST"])
 def admin_train_model():
     if not admin_required(): return redirect(url_for("login"))
-    if 'file' not in request.files:
-        flash("No file provided.", "error")
-        return redirect(url_for("admin_dashboard"))
-    file = request.files['file']
-    if file.filename == '':
-        flash("No selected file.", "error")
+    
+    backend_url = os.environ.get("RENDER_BACKEND_URL")
+    api_key = os.environ.get("INTERNAL_API_KEY")
+    if backend_url and api_key:
+        import requests
+        file = request.files.get('file')
+        if not file or file.filename == '':
+            flash("No file provided.", "error")
+            return redirect(url_for("admin_dashboard"))
+        
+        file_content = file.read()
+        files = {'file': (file.filename, file_content, file.mimetype)}
+        try:
+            r = requests.post(
+                f"{backend_url.rstrip('/')}/admin/train_model",
+                data=request.form,
+                files=files,
+                headers={"Authorization": f"Bearer {api_key}"},
+                timeout=30
+            )
+            if r.status_code == 200:
+                flash("Academic marks uploaded and model retrained on Render backend successfully.")
+            else:
+                flash("Forwarded model training failed on Render backend.", "error")
+        except Exception as e:
+            flash(f"Failed to forward training request: {str(e)}", "error")
+            
+        load_models()
         return redirect(url_for("admin_dashboard"))
 
     try:
@@ -1865,6 +1887,26 @@ def admin_export_training_data():
 def admin_retrain_global_model():
     if not admin_required(): return redirect(url_for("login"))
     
+    backend_url = os.environ.get("RENDER_BACKEND_URL")
+    api_key = os.environ.get("INTERNAL_API_KEY")
+    if backend_url and api_key:
+        import requests
+        try:
+            r = requests.post(
+                f"{backend_url.rstrip('/')}/admin/retrain_global_model",
+                headers={"Authorization": f"Bearer {api_key}"},
+                timeout=30
+            )
+            if r.status_code == 200:
+                flash("Global model retrained on Render backend successfully.")
+            else:
+                flash("Forwarded global model training failed on Render backend.", "error")
+        except Exception as e:
+            flash(f"Failed to forward global training request: {str(e)}", "error")
+            
+        load_models()
+        return redirect(url_for("admin_dashboard"))
+        
     df = generate_global_model_data()
     if len(df) < 2:
         flash("Not enough live student records to train globally. Need at least 2 users.", "error")
@@ -1873,7 +1915,7 @@ def admin_retrain_global_model():
     try:
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.metrics import accuracy_score
-        import os, pickle
+        import pickle
         
         X = df[['attendance', 'sgpa', 'avg_stress', 'missed_days', 'avg_mood', 'avg_energy', 'streak']]
         y = df['target']
@@ -1909,6 +1951,23 @@ def admin_retrain_global_model():
 def get_system_settings():
     """Loads system settings, defaulting to manual retraining if file doesn't exist."""
     import json
+    backend_url = os.environ.get("RENDER_BACKEND_URL")
+    api_key = os.environ.get("INTERNAL_API_KEY")
+    
+    if backend_url and api_key:
+        import requests
+        try:
+            r = requests.get(
+                f"{backend_url.rstrip('/')}/api/internal/get_data",
+                params={"file": "system_settings.json"},
+                headers={"Authorization": f"Bearer {api_key}"},
+                timeout=5
+            )
+            if r.status_code == 200:
+                return json.loads(r.text)
+        except Exception as e:
+            print(f"WARN: Failed to fetch system_settings.json from Render backend - {str(e)}")
+
     os.makedirs("data", exist_ok=True)
     target = "data/system_settings.json"
     if not os.path.exists(target):
@@ -1933,6 +1992,23 @@ def get_system_settings():
 def save_system_settings(settings):
     """Saves system settings to disk."""
     import json
+    backend_url = os.environ.get("RENDER_BACKEND_URL")
+    api_key = os.environ.get("INTERNAL_API_KEY")
+    
+    if backend_url and api_key:
+        import requests
+        try:
+            r = requests.post(
+                f"{backend_url.rstrip('/')}/api/internal/save_data",
+                json={"file": "system_settings.json", "content": json.dumps(settings, indent=4)},
+                headers={"Authorization": f"Bearer {api_key}"},
+                timeout=5
+            )
+            if r.status_code == 200:
+                return
+        except Exception as e:
+            print(f"CRITICAL: Failed to save system_settings.json to Render backend - {str(e)}")
+
     os.makedirs("data", exist_ok=True)
     target = "data/system_settings.json"
     try:
@@ -2059,6 +2135,10 @@ def admin_save_retrain_settings():
 
 
 def admin_required():
+    api_key = os.environ.get("INTERNAL_API_KEY")
+    auth_header = request.headers.get("Authorization")
+    if api_key and auth_header == f"Bearer {api_key}":
+        return True
     return session.get("role") == "admin"
 
 @app.route("/admin")

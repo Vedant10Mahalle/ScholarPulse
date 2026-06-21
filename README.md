@@ -91,3 +91,26 @@ The system utilizes an ensemble learning approach via Scikit-Learn's `RandomFore
 
 ---
 *Built for the future of intelligent education management.*
+
+## ☁️ Deployment (Decoupled Vercel + Render Architecture)
+
+Because this application uses server-side Jinja templates alongside lightweight CSV databases, you can host the **Frontend on Vercel** (for speed and serverless execution) and the **Backend on Render** (for stateful data persistence).
+
+### 1. Render Deployment (Backend & Data Storage)
+Render hosts the master database (CSV files) and persists them using a persistent disk volume.
+1. Connect your repository to a new **Web Service** on Render.
+2. In the Render Dashboard under **Disk**, add a **Persistent Disk**:
+   - **Mount Path:** `/app/data`
+   - **Size:** `1 GB`
+3. Under **Environment**, configure these variables:
+   - `INTERNAL_API_KEY` = `your_secure_secret_token` (a secure random string)
+   - `SMTP_EMAIL` = `your_email` (optional, for parent emails)
+   - `SMTP_PASSWORD` = `your_password` (optional, Gmail App Password)
+
+### 2. Vercel Deployment (Frontend / Serverless UI)
+Vercel executes the serverless Flask app and retrieves/saves database data dynamically from the Render backend.
+1. Deploy the same repository to **Vercel**.
+2. Under project settings, configure these **Environment Variables**:
+   - `RENDER_BACKEND_URL` = `https://your-render-service.onrender.com`
+   - `INTERNAL_API_KEY` = `your_secure_secret_token` (must match the Render token)
+   - `SMTP_EMAIL` and `SMTP_PASSWORD` = (same email credentials)

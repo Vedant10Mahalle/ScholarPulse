@@ -1,0 +1,17 @@
+# Environment variables / credentials
+.env
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local logs / database backups
+data/email_logs.txt
+data/*_backup.csv

@@ -494,3 +494,30 @@ input[type="range"]::-webkit-slider-thumb {
     font-size: 0.85rem;
     text-align: left;
 }
+
+/* ═══ Shared Modal Overlay & Content Styles ═══ */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay.open {
+    display: flex;
+}
+.modal-shared {
+    background: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 30px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    color: var(--text-primary);
+    text-align: left;
+    max-height: 90vh;
+    overflow-y: auto;
+}

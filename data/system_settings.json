@@ -1,5 +1,5 @@
 {
-    "retrain_mode": "manual",
+    "retrain_mode": "automatic",
     "last_global_train_time": null,
     "last_subject_train_time": null
 }

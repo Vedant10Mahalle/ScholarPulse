@@ -7,6 +7,16 @@ import os
 import pickle
 import io
 
+# Load .env file manually if it exists
+if os.path.exists(".env"):
+    with open(".env", "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, val = line.split("=", 1)
+                os.environ[key.strip()] = val.strip().strip('"').strip("'")
+
+
 # ═══════════════════════════════════════════════════════════════
 # ML MODEL LOADING
 # ═══════════════════════════════════════════════════════════════
@@ -183,6 +193,121 @@ def get_student_streak(usn):
     my['date'] = pd.to_datetime(my['date'], errors='coerce')
     my = my.dropna(subset=['date']).sort_values('date', ascending=False)
     return _calc_streak(my)
+
+
+# ═══════════════════════════════════════════════════════════════
+# EMAIL NOTIFICATION HELPERS
+# ═══════════════════════════════════════════════════════════════
+def send_parent_email(to_email, subject, body_html):
+    """Sends email notifications to parents via Gmail SMTP with local log fallback."""
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    
+    to_email = str(to_email).strip() if to_email else ""
+    if not to_email or "@" not in to_email:
+        print(f"EMAIL SKIP: Invalid or missing email address: '{to_email}'")
+        return False
+
+    smtp_email = os.environ.get("SMTP_EMAIL", "").strip()
+    smtp_password = os.environ.get("SMTP_PASSWORD", "").strip()
+
+    # If SMTP credentials are not configured, perform fallback simulation logging
+    if not smtp_email or not smtp_password:
+        os.makedirs("data", exist_ok=True)
+        log_entry = (
+            f"============================================================\n"
+            f"TIMESTAMP: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"TO: {to_email}\n"
+            f"SUBJECT: {subject}\n"
+            f"CONTENT:\n{body_html}\n"
+            f"============================================================\n\n"
+        )
+        try:
+            with open("data/email_logs.txt", "a", encoding="utf-8") as f:
+                f.write(log_entry)
+            print(f"EMAIL SIMULATION: Logged to data/email_logs.txt for {to_email}")
+            return True
+        except Exception as e:
+            print(f"EMAIL SIMULATION ERROR: Could not write simulation log - {e}")
+            return False
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = smtp_email
+        msg["To"] = to_email
+
+        # Attach html body
+        msg.attach(MIMEText(body_html, "html"))
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(smtp_email, smtp_password)
+            server.sendmail(smtp_email, [to_email], msg.as_string())
+        
+        print(f"EMAIL SUCCESS: Dispatched email to {to_email} successfully.")
+        return True
+    except Exception as e:
+        print(f"EMAIL ERROR: Failed to send email to {to_email} - {e}")
+        # Log to file on failure too, as emergency backup
+        try:
+            os.makedirs("data", exist_ok=True)
+            log_entry = (
+                f"============================================================\n"
+                f"[SEND FAILURE - {e}]\n"
+                f"TIMESTAMP: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+                f"TO: {to_email}\n"
+                f"SUBJECT: {subject}\n"
+                f"CONTENT:\n{body_html}\n"
+                f"============================================================\n\n"
+            )
+            with open("data/email_logs.txt", "a", encoding="utf-8") as f:
+                f.write(log_entry)
+        except Exception as log_err:
+            print(f"EMAIL FAILURE LOGGER ERROR: {log_err}")
+        return False
+
+def check_and_email_high_risk(usn):
+    """Calculates student risk and alerts parent via email if flagged as High."""
+    try:
+        profile = load_student_profile(usn)
+        if not profile:
+            return
+        
+        risk = calculate_multi_factor_risk(profile)
+        if risk.get("level") == "High":
+            parent_email = profile.get("parent_email", "").strip()
+            parent_name = profile.get("parent_name", "Parent/Guardian").strip()
+            student_name = profile.get("name", usn).strip()
+            
+            if parent_email and "@" in parent_email:
+                email_subject = f"ScholarPulse Alert — Academic/Behavioral Risk Flagged for {student_name}"
+                reasons_html = "".join(f"<li style='margin-bottom: 6px;'>{r}</li>" for r in risk.get('reasons', []))
+                email_body = f"""
+                <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #fee2e2; border-radius: 8px; border-top: 4px solid #dc2626;">
+                        <h2 style="color: #dc2626; text-align: center; margin-top: 0;">ScholarPulse Alert: Action Required</h2>
+                        <p>Dear {parent_name},</p>
+                        <p>We are writing to inform you that our student monitoring system has flagged a <strong>High Risk status</strong> for your child, <strong>{student_name} ({usn})</strong>.</p>
+                        <p>This alert is triggered automatically based on recent academic performance data or daily check-in indicators. Below is the summary of flagged factors:</p>
+                        <div style="background-color: #fef2f2; padding: 15px; border-radius: 6px; border: 1px solid #fecaca; margin: 20px 0;">
+                            <h4 style="margin-top: 0; color: #991b1b; margin-bottom: 10px;">Flagged Risk Indicators:</h4>
+                            <ul style="margin: 0; padding-left: 20px; color: #7f1d1d;">
+                                {reasons_html}
+                            </ul>
+                        </div>
+                        <p>We strongly encourage you to log into the parent portal or contact their assigned Faculty Mentor to discuss support plans and assistance options.</p>
+                        <p style="font-size: 0.9rem; color: #666666; margin-top: 25px;">This is an automated notification. Please do not reply directly to this email.</p>
+                        <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 20px 0;">
+                        <p style="font-size: 0.8rem; color: #999999; text-align: center;">ScholarPulse © 2026. All rights reserved.</p>
+                    </div>
+                </body>
+                </html>
+                """
+                send_parent_email(parent_email, email_subject, email_body)
+    except Exception as e:
+        print(f"FAILED TO EVALUATE/SEND HIGH RISK EMAIL ALERT: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -755,7 +880,7 @@ def _handle_login_post():
 
     if role == "teacher":
         df = get_df("data/teachers.csv")
-        matching = df[df["teacher_id"] == username]
+        matching = df[df["teacher_id"].astype(str).str.lower() == str(username).strip().lower()]
         if not matching.empty and _verify(matching.iloc[0]["password"], password):
             session["user_id"] = matching.iloc[0]["teacher_id"]
             session["name"] = matching.iloc[0]["name"]
@@ -764,7 +889,7 @@ def _handle_login_post():
 
     elif role == "student":
         df = get_df("data/students.csv")
-        matching = df[df["usn"].astype(str) == str(username)]
+        matching = df[df["usn"].astype(str).str.lower() == str(username).strip().lower()]
         if not matching.empty and _verify(matching.iloc[0]["password"], password):
             session["user_id"] = matching.iloc[0]["usn"]
             session["name"] = matching.iloc[0]["name"]
@@ -776,7 +901,7 @@ def _handle_login_post():
 
     elif role == "parent":
         df = get_df("data/parents.csv")
-        matching = df[df["parent_id"] == username]
+        matching = df[df["parent_id"].astype(str).str.lower() == str(username).strip().lower()]
         if not matching.empty and _verify(matching.iloc[0]["password"], password):
             session["user_id"] = matching.iloc[0]["parent_id"]
             session["role"] = "parent"
@@ -785,7 +910,7 @@ def _handle_login_post():
 
     elif role == "admin":
         df = get_df("data/admins.csv")
-        matching = df[df["admin_id"] == username]
+        matching = df[df["admin_id"].astype(str).str.lower() == str(username).strip().lower()]
         if not matching.empty and _verify(matching.iloc[0]["password"], password):
             session["user_id"] = matching.iloc[0]["admin_id"]
             session["name"] = matching.iloc[0]["name"]
@@ -810,42 +935,64 @@ def login_admin():
         flash("Invalid credentials or role mismatch.")
     return render_template("login.html", preselect_admin=True)
 
+def setup_parent_account(usn, parent_name, parent_email, parent_phone):
+    parent_name = str(parent_name).strip() if pd.notna(parent_name) else ""
+    parent_email = str(parent_email).strip() if pd.notna(parent_email) else ""
+    parent_phone = str(parent_phone).strip() if pd.notna(parent_phone) else ""
+
+    if not parent_email:
+        return
+
+    parent_id = f"P-{usn}"
+    pdf = get_df("data/parents.csv")
+    if pdf.empty:
+        pdf = pd.DataFrame(columns=["parent_id", "name", "usn", "password", "email", "phone"])
+    
+    # Remove any old parent entry for this USN to avoid duplicates
+    if "usn" in pdf.columns:
+        pdf = pdf[pdf["usn"].astype(str) != str(usn)]
+
+    from werkzeug.security import generate_password_hash
+    new_parent = {
+        'parent_id': parent_id,
+        'name': parent_name if parent_name else "Parent",
+        'usn': usn,
+        'password': generate_password_hash("welcome123"),
+        'email': parent_email,
+        'phone': parent_phone
+    }
+    pdf = pd.concat([pdf, pd.DataFrame([new_parent])], ignore_index=True)
+    save_df(pdf, "data/parents.csv")
+
+    # Send Parent welcome email
+    email_subject = "ScholarPulse — Parent Account Onboarding"
+    email_body = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #dddddd; border-radius: 8px;">
+            <h2 style="color: #0d9488; text-align: center;">ScholarPulse Onboarding</h2>
+            <p>Dear Parent/Guardian,</p>
+            <p>An official parent account has been created for you to monitor the academic progress and well-being metrics of your child (USN: <strong>{usn}</strong>).</p>
+            
+            <div style="background-color: #f0fdfa; padding: 15px; border-left: 4px solid #0d9488; margin: 20px 0; border-radius: 4px;">
+                <p style="margin: 0 0 8px 0;"><strong>Your Login Credentials:</strong></p>
+                <p style="margin: 0 0 6px 0;">• <strong>Parent ID:</strong> <code style="background-color: #ffffff; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1;">{parent_id}</code></p>
+                <p style="margin: 0;">• <strong>Temporary Password:</strong> <code style="background-color: #ffffff; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1;">welcome123</code></p>
+            </div>
+            
+            <p>Please log in to the portal at your earliest convenience to monitor details and configure your profile.</p>
+            <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 20px 0;">
+            <p style="font-size: 0.85rem; color: #666666; text-align: center;">This is an automated system notification from ScholarPulse.</p>
+        </div>
+    </body>
+    </html>
+    """
+    send_parent_email(parent_email, email_subject, email_body)
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == "POST":
-        usn = request.form.get("usn").strip()
-        name = request.form.get("name").strip()
-        branch = request.form.get("branch").strip()
-        semester = request.form.get("semester").strip()
-        password = request.form.get("password")
-        parent_name = request.form.get("parent_name", "").strip()
-        parent_phone = request.form.get("parent_phone", "").strip()
-
-        df = get_df("data/students.csv")
-        if not df.empty and usn in df['usn'].values:
-            flash("USN already registered. Please log in.")
-            return redirect(url_for("register"))
-
-        from werkzeug.security import generate_password_hash
-        new_row = {'usn': usn, 'name': name, 'branch': branch, 'semester': semester,
-                   'mentor_id': '', 'password': generate_password_hash(password)}
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-        save_df(df, "data/students.csv")
-
-        if parent_name and parent_phone:
-            pdf = get_df("data/parents.csv")
-            parent_id = f"P-{usn}"
-            if pdf.empty or parent_id not in pdf['parent_id'].values:
-                new_parent = {'parent_id': parent_id, 'name': parent_name, 'usn': usn,
-                              'password': generate_password_hash("welcome123")}
-                pdf = pd.concat([pdf, pd.DataFrame([new_parent])], ignore_index=True)
-                save_df(pdf, "data/parents.csv")
-            flash(f"Registration successful! Parent Login ID: {parent_id}, Password: welcome123")
-        else:
-            flash("Registration successful! Please log in to select your Mentor.")
-        return redirect(url_for("login"))
-
-    return render_template("register.html")
+    flash("Direct student onboarding is disabled. Please log in with the credentials provided by your Admin.")
+    return redirect(url_for("login"))
 
 @app.route("/logout")
 def logout():
@@ -1006,6 +1153,7 @@ def teacher_academic_entry(usn):
         save_df(marks_df, "data/academic_marks.csv")
         run_retrain_global_automatic()
         run_retrain_subject_automatic()
+        check_and_email_high_risk(usn)
         flash(f"Academic marks updated for {profile.get('name', usn)}.")
         return redirect(url_for("teacher_student_view", usn=usn))
 
@@ -1109,6 +1257,7 @@ def student_daily_checkin():
         df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
         save_df(df, "data/daily_checkins.csv")
         run_retrain_global_automatic()
+        check_and_email_high_risk(usn)
         flash("Check-in complete! Keep your streak going! ")
         return redirect(url_for("student"))
 
@@ -1314,6 +1463,50 @@ def forgot_password():
 
     return render_template("forgot_password.html")
 
+@app.route("/change_password", methods=["POST"])
+def change_password():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    role = session.get("role")
+    user_id = session.get("user_id")
+    new_password = request.form.get("new_password")
+    if not new_password or not new_password.strip():
+        flash("Password cannot be empty.", "error")
+        return redirect(url_for("home"))
+
+    from werkzeug.security import generate_password_hash
+    hashed_pwd = generate_password_hash(new_password)
+
+    if role == "student":
+        target = "data/students.csv"
+        id_col = "usn"
+    elif role == "teacher":
+        target = "data/teachers.csv"
+        id_col = "teacher_id"
+    elif role == "parent":
+        target = "data/parents.csv"
+        id_col = "parent_id"
+    elif role == "admin":
+        target = "data/admins.csv"
+        id_col = "admin_id"
+    else:
+        flash("Invalid role.", "error")
+        return redirect(url_for("home"))
+
+    df = get_df(target)
+    if not df.empty and id_col in df.columns:
+        idx = df[df[id_col].astype(str) == str(user_id)].index
+        if not idx.empty:
+            df.loc[idx[0], "password"] = hashed_pwd
+            save_df(df, target)
+            flash("Password updated successfully!", "success")
+        else:
+            flash("User not found.", "error")
+    else:
+        flash("System error updating password.", "error")
+
+    return redirect(url_for("home"))
+
 @app.route("/admin/upload/<entity>", methods=["POST"])
 def admin_upload_csv(entity):
     if not admin_required(): return redirect(url_for("login"))
@@ -1339,7 +1532,9 @@ def admin_upload_csv(entity):
                 tid = str(row.get("teacher_id")).strip()
                 name = str(row.get("name")).strip()
                 if not df.empty and tid in df["teacher_id"].values: continue
-                new_row = {"teacher_id": tid, "name": name, "department": dept, "password": default_pwd}
+                pwd_col = row.get("password")
+                pwd_val = generate_password_hash(str(pwd_col).strip()) if pd.notna(pwd_col) and str(pwd_col).strip() else default_pwd
+                new_row = {"teacher_id": tid, "name": name, "department": dept, "password": pwd_val}
                 df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
             save_df(df, target)
 
@@ -1351,10 +1546,17 @@ def admin_upload_csv(entity):
                 usn = str(row.get("usn")).strip()
                 name = str(row.get("name")).strip()
                 sem = str(row.get("semester", "1")).strip()
+                parent_name = str(row.get("parent_name", "")).strip()
+                parent_email = str(row.get("parent_email", "")).strip()
+                parent_phone = str(row.get("parent_phone", "")).strip()
                 if not df.empty and usn in df["usn"].values: continue
+                pwd_col = row.get("password")
+                pwd_val = generate_password_hash(str(pwd_col).strip()) if pd.notna(pwd_col) and str(pwd_col).strip() else default_pwd
                 new_row = {"usn": usn, "name": name, "branch": branch, "semester": sem,
-                           "mentor_id": "", "password": default_pwd}
+                           "mentor_id": "", "password": pwd_val,
+                           "parent_name": parent_name, "parent_email": parent_email, "parent_phone": parent_phone}
                 df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+                setup_parent_account(usn, parent_name, parent_email, parent_phone)
             save_df(df, target)
 
         elif entity == "parents":
@@ -1364,8 +1566,13 @@ def admin_upload_csv(entity):
                 pid = str(row.get("parent_id")).strip()
                 name = str(row.get("name")).strip()
                 usn = str(row.get("usn")).strip()
+                email = str(row.get("email", "")).strip()
+                phone = str(row.get("phone", "")).strip()
                 if not df.empty and pid in df["parent_id"].values: continue
-                new_row = {"parent_id": pid, "name": name, "usn": usn, "password": default_pwd}
+                pwd_col = row.get("password")
+                pwd_val = generate_password_hash(str(pwd_col).strip()) if pd.notna(pwd_col) and str(pwd_col).strip() else default_pwd
+                new_row = {"parent_id": pid, "name": name, "usn": usn, "password": pwd_val,
+                           "email": email, "phone": phone}
                 df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
             save_df(df, target)
 
@@ -1703,13 +1910,13 @@ def admin_required():
 @app.route("/admin")
 def admin_dashboard():
     if not admin_required(): return redirect(url_for("login_admin"))
-    teachers = get_df("data/teachers.csv").to_dict(orient="records")
-    students = get_df("data/students.csv").to_dict(orient="records")
+    teachers = get_df("data/teachers.csv").fillna("").to_dict(orient="records")
+    students = get_df("data/students.csv").fillna("").to_dict(orient="records")
     for s in students:
         risk_data = calculate_multi_factor_risk(load_student_profile(s["usn"]))
         s["risk_level"] = risk_data["level"]
         s["dropout_prob"] = risk_data["dropout_prob"]
-    parents = get_df("data/parents.csv").to_dict(orient="records")
+    parents = get_df("data/parents.csv").fillna("").to_dict(orient="records")
     
     # Calculate live active sessions
     now = datetime.now()
@@ -1738,11 +1945,51 @@ def admin_dashboard():
             "status": "Online" if is_live else "Away"
         })
     live_users.sort(key=lambda x: (x["status"] == "Online", x["last_seen"]), reverse=True)
+
+    # Calculate Department/Branch Stats dynamically
+    departments = {}
+    for t in teachers:
+        dept = t.get("department", "").strip()
+        if dept:
+            if dept not in departments:
+                departments[dept] = {"teachers": 0, "students": 0, "avg_risk": 0.0, "risk_count": 0}
+            departments[dept]["teachers"] += 1
+            
+    for s in students:
+        branch = s.get("branch", "").strip()
+        if branch:
+            if branch not in departments:
+                departments[branch] = {"teachers": 0, "students": 0, "avg_risk": 0.0, "risk_count": 0}
+            departments[branch]["students"] += 1
+            prob = s.get("dropout_prob", 0)
+            try:
+                prob = float(prob)
+                departments[branch]["avg_risk"] += prob
+                departments[branch]["risk_count"] += 1
+            except (ValueError, TypeError):
+                pass
+                
+    for dept_name, stats in departments.items():
+        if stats["risk_count"] > 0:
+            stats["avg_risk"] = round(stats["avg_risk"] / stats["risk_count"], 1)
+        else:
+            stats["avg_risk"] = 0.0
+
+    dept_list = []
+    for name, stats in departments.items():
+        dept_list.append({
+            "name": name,
+            "teachers": stats["teachers"],
+            "students": stats["students"],
+            "avg_risk": stats["avg_risk"]
+        })
+    dept_list.sort(key=lambda x: x["name"])
     
     return render_template("admin_dashboard.html",
         admin_name=session.get("name", "Admin"),
         teachers=teachers, students=students, parents=parents,
         live_users=live_users,
+        departments=dept_list,
         retrain_settings=get_system_settings())
 
 # ── Teachers ─────────────────────────────────────────────────
@@ -1753,12 +2000,15 @@ def admin_add_teacher():
     tid  = request.form.get("teacher_id").strip()
     name = request.form.get("name").strip()
     dept = request.form.get("department").strip()
+    pwd  = request.form.get("password", "").strip()
+    if not pwd:
+        pwd = "welcome123"
     df = get_df("data/teachers.csv")
     if not df.empty and tid in df["teacher_id"].values:
         flash(f"Teacher ID '{tid}' already exists.", "error")
         return redirect(url_for("admin_dashboard") + "#teachers")
     new_row = {"teacher_id": tid, "name": name, "department": dept,
-               "password": generate_password_hash("welcome123")}
+               "password": generate_password_hash(pwd)}
     df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
     save_df(df, "data/teachers.csv")
     flash(f"Teacher '{name}' added successfully.")
@@ -1799,16 +2049,28 @@ def admin_add_student():
     usn    = request.form.get("usn").strip()
     name   = request.form.get("name").strip()
     branch = request.form.get("branch").strip()
-    sem    = request.form.get("semester")
+    sem_val = request.form.get("semester")
+    try:
+        sem = int(sem_val)
+    except (ValueError, TypeError):
+        sem = np.nan
     mentor = request.form.get("mentor_id", "")
+    parent_name = request.form.get("parent_name", "").strip()
+    parent_email = request.form.get("parent_email", "").strip()
+    parent_phone = request.form.get("parent_phone", "").strip()
+    pwd  = request.form.get("password", "").strip()
+    if not pwd:
+        pwd = "welcome123"
     df = get_df("data/students.csv")
     if not df.empty and usn in df["usn"].values:
         flash(f"USN '{usn}' already exists.", "error")
         return redirect(url_for("admin_dashboard") + "#students")
     new_row = {"usn": usn, "name": name, "branch": branch, "semester": sem,
-               "mentor_id": mentor, "password": generate_password_hash("welcome123")}
+               "mentor_id": mentor, "password": generate_password_hash(pwd),
+               "parent_name": parent_name, "parent_email": parent_email, "parent_phone": parent_phone}
     df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
     save_df(df, "data/students.csv")
+    setup_parent_account(usn, parent_name, parent_email, parent_phone)
     flash(f"Student '{name}' ({usn}) added successfully.")
     return redirect(url_for("admin_dashboard") + "#students")
 
@@ -1823,12 +2085,20 @@ def admin_edit_student(usn):
         return redirect(url_for("admin_dashboard") + "#students")
     df.loc[idx[0], "name"]      = request.form.get("name").strip()
     df.loc[idx[0], "branch"]    = request.form.get("branch").strip()
-    df.loc[idx[0], "semester"]  = request.form.get("semester")
+    sem_val = request.form.get("semester")
+    try:
+        df.loc[idx[0], "semester"] = int(sem_val)
+    except (ValueError, TypeError):
+        df.loc[idx[0], "semester"] = np.nan
     df.loc[idx[0], "mentor_id"] = request.form.get("mentor_id", "")
+    df.loc[idx[0], "parent_name"] = request.form.get("parent_name", "").strip()
+    df.loc[idx[0], "parent_email"] = request.form.get("parent_email", "").strip()
+    df.loc[idx[0], "parent_phone"] = request.form.get("parent_phone", "").strip()
     new_pwd = request.form.get("password")
     if new_pwd and new_pwd.strip():
         df.loc[idx[0], "password"] = generate_password_hash(new_pwd)
     save_df(df, "data/students.csv")
+    setup_parent_account(usn, df.loc[idx[0], "parent_name"], df.loc[idx[0], "parent_email"], df.loc[idx[0], "parent_phone"])
     flash(f"Student '{usn}' updated successfully.")
     return redirect(url_for("admin_dashboard") + "#students")
 
@@ -1849,12 +2119,15 @@ def admin_add_parent():
     pid  = request.form.get("parent_id").strip()
     name = request.form.get("name").strip()
     usn  = request.form.get("usn").strip()
+    pwd  = request.form.get("password", "").strip()
+    if not pwd:
+        pwd = "welcome123"
     df = get_df("data/parents.csv")
     if not df.empty and pid in df["parent_id"].values:
         flash(f"Parent ID '{pid}' already exists.", "error")
         return redirect(url_for("admin_dashboard") + "#parents")
     new_row = {"parent_id": pid, "name": name, "usn": usn,
-               "password": generate_password_hash("welcome123")}
+               "password": generate_password_hash(pwd)}
     df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
     save_df(df, "data/parents.csv")
     flash(f"Parent '{name}' linked to {usn} successfully.")
